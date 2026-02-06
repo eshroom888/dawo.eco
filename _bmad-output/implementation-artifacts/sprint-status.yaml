@@ -1,0 +1,123 @@
+# generated: 2026-02-05
+# project: DAWO.ECO
+# project_key: DAWO-ECO
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-02-05
+project: DAWO.ECO
+project_key: DAWO-ECO
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+
+development_status:
+  # Epic 1: Agent Foundation & Shared Validators (5 stories)
+  epic-1: done
+  1-1-dawo-team-directory-structure: done
+  1-2-eu-compliance-checker-validator: done
+  1-3-brand-voice-validator: done
+  1-4-llm-tier-configuration: done
+  1-5-external-api-retry-middleware: done
+  epic-1-retrospective: done
+
+  # Epic 2: Research Intelligence Pipeline (8 stories)
+  epic-2: in-progress
+  2-1-research-pool-database-storage: done
+  2-2-research-item-scoring-engine: done
+  2-3-reddit-research-scanner: done
+  2-4-youtube-research-scanner: done
+  2-5-instagram-trend-scanner: backlog
+  2-6-industry-news-scanner: backlog
+  2-7-pubmed-scientific-research-scanner: backlog
+  2-8-research-compliance-validation: backlog
+  epic-2-retrospective: optional
+
+  # Epic 3: Content Creation & Assets (9 stories)
+  epic-3: backlog
+  3-1-shopify-product-data-integration: backlog
+  3-2-google-drive-asset-storage: backlog
+  3-3-instagram-caption-generator: backlog
+  3-4-orshot-branded-graphics-integration: backlog
+  3-5-nano-banana-ai-image-generation: backlog
+  3-6-content-compliance-rewrite-suggestions: backlog
+  3-7-content-quality-scoring: backlog
+  3-8-auto-publish-eligibility-tagging: backlog
+  3-9-asset-usage-tracking: backlog
+  epic-3-retrospective: optional
+
+  # Epic 4: Approval & Auto-Publishing (7 stories)
+  epic-4: backlog
+  4-1-content-approval-queue-ui: backlog
+  4-2-approve-reject-edit-actions: backlog
+  4-3-batch-approval-capability: backlog
+  4-4-content-scheduling-interface: backlog
+  4-5-instagram-graph-api-auto-publishing: backlog
+  4-6-discord-approval-notifications: backlog
+  4-7-discord-publish-notifications: backlog
+  epic-4-retrospective: optional
+
+  # Epic 5: B2B Sales Pipeline (5 stories)
+  epic-5: backlog
+  5-1-b2b-lead-research-scanner: backlog
+  5-2-lead-information-enrichment: backlog
+  5-3-personalized-outreach-draft-generator: backlog
+  5-4-gmail-api-integration: backlog
+  5-5-lead-pipeline-status-tracking: backlog
+  epic-5-retrospective: optional
+
+  # Epic 6: CleanMarket & Regulatory Intelligence (10 stories)
+  epic-6: backlog
+  6-1-eu-health-claims-register-monitor: backlog
+  6-2-novel-food-catalogue-monitor: backlog
+  6-3-mattilsynet-regulatory-monitor: backlog
+  6-4-new-claims-activation-alerts: backlog
+  6-5-competitor-content-scanner: backlog
+  6-6-health-claim-extraction-engine: backlog
+  6-7-eu-violation-detection: backlog
+  6-8-evidence-collection-screenshots: backlog
+  6-9-searchable-evidence-database: backlog
+  6-10-on-demand-violation-reports: backlog
+  epic-6-retrospective: optional
+
+  # Epic 7: Analytics & System Operations (10 stories)
+  epic-7: backlog
+  7-1-instagram-engagement-metrics-collection: backlog
+  7-2-utm-click-through-tracking: backlog
+  7-3-shopify-sales-attribution: backlog
+  7-4-post-publish-quality-scoring: backlog
+  7-5-performance-feedback-loop: backlog
+  7-6-agent-schedule-configuration: backlog
+  7-7-manual-team-agent-triggers: backlog
+  7-8-execution-logs-status-dashboard: backlog
+  7-9-google-calendar-sync: backlog
+  7-10-graceful-api-degradation-handling: backlog
+  epic-7-retrospective: optional

@@ -1,0 +1,131 @@
+{
+  "regulation": "EC 1924/2006",
+  "version": "2026-02",
+  "description": "EU Health Claims Regulation compliance rules for DAWO.ECO",
+  "prohibited_patterns": [
+    {"pattern": "treats", "category": "treatment_claim"},
+    {"pattern": "treat", "category": "treatment_claim"},
+    {"pattern": "treating", "category": "treatment_claim"},
+    {"pattern": "cures", "category": "cure_claim"},
+    {"pattern": "cure", "category": "cure_claim"},
+    {"pattern": "curing", "category": "cure_claim"},
+    {"pattern": "prevents", "category": "prevention_claim"},
+    {"pattern": "prevent", "category": "prevention_claim"},
+    {"pattern": "preventing", "category": "prevention_claim"},
+    {"pattern": "heals", "category": "treatment_claim"},
+    {"pattern": "heal", "category": "treatment_claim"},
+    {"pattern": "healing", "category": "treatment_claim"},
+    {"pattern": "fights disease", "category": "treatment_claim"},
+    {"pattern": "fight disease", "category": "treatment_claim"},
+    {"pattern": "combats", "category": "treatment_claim"},
+    {"pattern": "eliminates", "category": "treatment_claim"},
+    {"pattern": "destroys", "category": "treatment_claim"},
+    {"pattern": "kills", "category": "treatment_claim"},
+    {"pattern": "anti-cancer", "category": "disease_reference"},
+    {"pattern": "anti-tumor", "category": "disease_reference"},
+    {"pattern": "antidepressant", "category": "disease_reference"},
+    {"pattern": "anxiety treatment", "category": "disease_reference"},
+    {"pattern": "depression treatment", "category": "disease_reference"},
+    {"pattern": "alzheimer", "category": "disease_reference"},
+    {"pattern": "dementia", "category": "disease_reference"},
+    {"pattern": "parkinson", "category": "disease_reference"},
+    {"pattern": "diabetes", "category": "disease_reference"},
+    {"pattern": "cancer", "category": "disease_reference"},
+    {"pattern": "tumor", "category": "disease_reference"},
+    {"pattern": "disease", "category": "disease_reference"}
+  ],
+  "borderline_patterns": [
+    {"pattern": "supports", "category": "function_claim"},
+    {"pattern": "support", "category": "function_claim"},
+    {"pattern": "supporting", "category": "function_claim"},
+    {"pattern": "promotes", "category": "function_claim"},
+    {"pattern": "promote", "category": "function_claim"},
+    {"pattern": "promoting", "category": "function_claim"},
+    {"pattern": "contributes to", "category": "function_claim"},
+    {"pattern": "contribute to", "category": "function_claim"},
+    {"pattern": "helps with", "category": "function_claim"},
+    {"pattern": "help with", "category": "function_claim"},
+    {"pattern": "boosts", "category": "function_claim"},
+    {"pattern": "boost", "category": "function_claim"},
+    {"pattern": "boosting", "category": "function_claim"},
+    {"pattern": "enhances", "category": "function_claim"},
+    {"pattern": "enhance", "category": "function_claim"},
+    {"pattern": "enhancing", "category": "function_claim"},
+    {"pattern": "improves", "category": "function_claim"},
+    {"pattern": "improve", "category": "function_claim"},
+    {"pattern": "improving", "category": "function_claim"},
+    {"pattern": "strengthens", "category": "function_claim"},
+    {"pattern": "strengthen", "category": "function_claim"},
+    {"pattern": "aids", "category": "function_claim"},
+    {"pattern": "assists", "category": "function_claim"},
+    {"pattern": "beneficial for", "category": "general_benefit"},
+    {"pattern": "good for", "category": "general_benefit"},
+    {"pattern": "helps maintain", "category": "function_claim"},
+    {"pattern": "maintains", "category": "function_claim"}
+  ],
+  "permitted_patterns": [
+    {"pattern": "wellness", "category": "lifestyle"},
+    {"pattern": "well-being", "category": "lifestyle"},
+    {"pattern": "wellbeing", "category": "lifestyle"},
+    {"pattern": "ritual", "category": "lifestyle"},
+    {"pattern": "routine", "category": "lifestyle"},
+    {"pattern": "tradition", "category": "cultural"},
+    {"pattern": "traditional", "category": "cultural"},
+    {"pattern": "Nordic", "category": "cultural"},
+    {"pattern": "Scandinavian", "category": "cultural"},
+    {"pattern": "foraging", "category": "cultural"},
+    {"pattern": "nature", "category": "lifestyle"},
+    {"pattern": "natural", "category": "lifestyle"},
+    {"pattern": "DOI:", "category": "scientific_citation"},
+    {"pattern": "doi.org", "category": "scientific_citation"},
+    {"pattern": "study found", "category": "scientific_citation"},
+    {"pattern": "research shows", "category": "scientific_citation"},
+    {"pattern": "according to research", "category": "scientific_citation"},
+    {"pattern": "lifestyle", "category": "lifestyle"},
+    {"pattern": "daily routine", "category": "lifestyle"},
+    {"pattern": "morning ritual", "category": "lifestyle"},
+    {"pattern": "self-care", "category": "lifestyle"}
+  ],
+  "novel_food_classifications": {
+    "chaga": {
+      "status": "novel_food",
+      "use": "supplement_only",
+      "notes": "Inonotus obliquus - Novel Food, can only be marketed as dietary supplement"
+    },
+    "lions_mane": {
+      "status": "food",
+      "use": "food_or_supplement",
+      "notes": "Hericium erinaceus - Traditional food use, can be marketed as food or supplement"
+    },
+    "lion's_mane": {
+      "status": "food",
+      "use": "food_or_supplement",
+      "notes": "Hericium erinaceus - Traditional food use, can be marketed as food or supplement"
+    },
+    "reishi": {
+      "status": "food",
+      "use": "food_or_supplement",
+      "notes": "Ganoderma lucidum - Traditional food use in Asia, can be marketed as food or supplement"
+    },
+    "cordyceps": {
+      "status": "novel_food",
+      "use": "supplement_only",
+      "notes": "Cordyceps militaris - Novel Food, can only be marketed as dietary supplement"
+    },
+    "shiitake": {
+      "status": "traditional_food",
+      "use": "food",
+      "notes": "Lentinula edodes - Traditional food, widely consumed as food"
+    },
+    "maitake": {
+      "status": "traditional_food",
+      "use": "food",
+      "notes": "Grifola frondosa - Traditional food, widely consumed as food"
+    },
+    "turkey_tail": {
+      "status": "novel_food",
+      "use": "supplement_only",
+      "notes": "Trametes versicolor - Novel Food, can only be marketed as dietary supplement"
+    }
+  }
+}

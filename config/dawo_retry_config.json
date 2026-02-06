@@ -1,0 +1,35 @@
+{
+  "version": "2026-02",
+  "description": "Retry middleware configuration for DAWO external API calls",
+
+  "default": {
+    "max_retries": 3,
+    "base_delay": 1.0,
+    "max_delay": 60.0,
+    "backoff_multiplier": 2.0,
+    "timeout": 30.0,
+    "max_rate_limit_wait": 300
+  },
+
+  "api_overrides": {
+    "instagram": {
+      "timeout": 45.0,
+      "max_rate_limit_wait": 600
+    },
+    "discord": {
+      "max_retries": 2,
+      "timeout": 10.0
+    },
+    "orshot": {
+      "timeout": 60.0
+    },
+    "shopify": {
+      "timeout": 30.0
+    }
+  },
+
+  "discord_alerts": {
+    "enabled": true,
+    "cooldown_seconds": 300
+  }
+}

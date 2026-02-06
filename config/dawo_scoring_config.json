@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Scoring configuration for DAWO Research Item Scoring Engine",
+  "weights": {
+    "relevance": 0.25,
+    "recency": 0.20,
+    "source_quality": 0.25,
+    "engagement": 0.20,
+    "compliance": 0.10
+  },
+  "source_overrides": {
+    "reddit": {
+      "relevance": 0.20,
+      "recency": 0.20,
+      "source_quality": 0.15,
+      "engagement": 0.35,
+      "compliance": 0.10
+    },
+    "pubmed": {
+      "relevance": 0.25,
+      "recency": 0.15,
+      "source_quality": 0.35,
+      "engagement": 0.15,
+      "compliance": 0.10
+    }
+  },
+  "keywords": {
+    "primary": {
+      "lions_mane": ["lion's mane", "lions mane", "hericium erinaceus"],
+      "chaga": ["chaga", "inonotus obliquus"],
+      "reishi": ["reishi", "ganoderma lucidum"],
+      "cordyceps": ["cordyceps", "cordyceps sinensis", "cordyceps militaris"],
+      "shiitake": ["shiitake", "lentinula edodes"],
+      "maitake": ["maitake", "grifola frondosa"]
+    },
+    "secondary": {
+      "cognition": ["cognition", "cognitive", "brain", "memory", "focus", "mental clarity"],
+      "immunity": ["immunity", "immune", "immune system"],
+      "energy": ["energy", "stamina", "vitality", "fatigue"],
+      "stress": ["stress", "adaptogen", "adaptogenic", "cortisol"],
+      "sleep": ["sleep", "insomnia", "rest"]
+    }
+  },
+  "source_tiers": {
+    "pubmed": 8,
+    "news": 6,
+    "youtube": 4,
+    "reddit": 3,
+    "instagram": 3
+  },
+  "pubmed_study_bonuses": {
+    "RCT": 2,
+    "meta-analysis": 2,
+    "systematic_review": 1,
+    "other": 0
+  },
+  "engagement_thresholds": {
+    "reddit": {
+      "metric": "upvotes",
+      "max_threshold": 100,
+      "scale": "linear"
+    },
+    "youtube": {
+      "metric": "views",
+      "max_threshold": 10000,
+      "scale": "log"
+    },
+    "instagram": {
+      "metric": "likes",
+      "max_threshold": 500,
+      "scale": "linear"
+    },
+    "pubmed": {
+      "metric": "citation_count",
+      "max_threshold": 50,
+      "scale": "linear"
+    },
+    "news": {
+      "metric": null,
+      "default_score": 5
+    }
+  },
+  "recency": {
+    "decay_days": 30,
+    "max_score": 10
+  }
+}

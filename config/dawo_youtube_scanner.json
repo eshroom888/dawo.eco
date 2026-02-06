@@ -1,0 +1,42 @@
+{
+  "search_queries": [
+    "mushroom supplements",
+    "lion's mane benefits",
+    "adaptogen reviews"
+  ],
+  "min_views": 1000,
+  "days_back": 7,
+  "max_videos_per_query": 50,
+  "health_channel_keywords": [
+    "health",
+    "wellness",
+    "nutrition",
+    "supplement",
+    "medical",
+    "doctor",
+    "science",
+    "research"
+  ],
+  "transcript": {
+    "preferred_languages": ["en"],
+    "max_transcript_length": 50000
+  },
+  "schedule": {
+    "cron": "0 3 * * 0",
+    "timezone": "Europe/Oslo",
+    "_comment": "Weekly Sunday 3 AM (per AC #1)"
+  },
+  "youtube_api": {
+    "_comment": "YouTube API key is loaded from environment variable",
+    "api_key_env": "YOUTUBE_API_KEY",
+    "daily_quota_limit": 10000,
+    "search_quota_cost": 100,
+    "video_quota_cost": 1
+  },
+  "insight_extraction": {
+    "_comment": "Uses tier=generate (maps to quality model at runtime)",
+    "tier": "generate",
+    "short_transcript_threshold": 200,
+    "low_confidence_threshold": 0.5
+  }
+}

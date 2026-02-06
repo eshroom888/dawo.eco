@@ -1,0 +1,112 @@
+{
+  "brand_name": "DAWO",
+  "version": "2026-02",
+  "tone_pillars": {
+    "warm": {
+      "description": "Friendly, inviting, personal - not corporate or cold",
+      "positive_markers": ["we", "our", "together", "share", "enjoy", "love", "friends", "family", "community", "welcome"],
+      "negative_markers": ["corporation", "enterprise", "consumers", "users", "customers", "clients", "stakeholders", "leverage"]
+    },
+    "educational": {
+      "description": "Informative first, sales second - not pushy or urgent",
+      "positive_markers": ["learn", "discover", "understand", "explore", "tradition", "history", "knowledge", "curious", "research", "study"],
+      "negative_markers": ["buy now", "limited time", "act fast", "don't miss", "exclusive offer", "hurry", "last chance", "order now", "sale ends"]
+    },
+    "nordic_simplicity": {
+      "description": "Clean, minimal, authentic - not cluttered or hyperbolic",
+      "positive_markers": ["forest", "nature", "Nordic", "Scandinavian", "pure", "simple", "clean", "authentic", "honest", "minimal", "tradition", "heritage"],
+      "negative_markers": ["amazing", "incredible", "revolutionary", "game-changer", "ultimate", "best-ever", "mind-blowing", "insane", "crazy good"]
+    }
+  },
+  "forbidden_terms": {
+    "medicinal": [
+      "treatment", "treats", "treat",
+      "cure", "cures", "curing",
+      "heal", "heals", "healing",
+      "remedy", "remedies",
+      "therapeutic", "therapy",
+      "clinical", "clinically",
+      "medicinal", "medicine",
+      "disease", "diseases",
+      "illness", "illnesses",
+      "condition", "conditions",
+      "symptoms", "symptom",
+      "diagnosis", "diagnose",
+      "prescription", "prescribe",
+      "patient", "patients"
+    ],
+    "sales_pressure": [
+      "buy now",
+      "limited time",
+      "act fast",
+      "don't miss out",
+      "exclusive offer",
+      "hurry",
+      "last chance",
+      "order now",
+      "sale ends",
+      "while supplies last",
+      "one-time offer",
+      "special deal"
+    ],
+    "superlatives": [
+      "best",
+      "greatest",
+      "most powerful",
+      "ultimate",
+      "revolutionary",
+      "game-changer",
+      "breakthrough",
+      "miracle",
+      "unbelievable",
+      "incredible",
+      "amazing",
+      "insane"
+    ]
+  },
+  "ai_generic_patterns": [
+    "In today's fast-paced world",
+    "Are you looking for",
+    "Look no further",
+    "Whether you're a .* or .*",
+    "It's no secret that",
+    "At the end of the day",
+    "Take your .* to the next level",
+    "Unlock your potential",
+    "Transform your",
+    "Elevate your",
+    "Supercharge your",
+    "Game-changing",
+    "Revolutionary",
+    "In this article",
+    "Let's dive in",
+    "Without further ado",
+    "It goes without saying",
+    "Needless to say",
+    "In conclusion",
+    "To sum up"
+  ],
+  "style_examples": {
+    "good": [
+      "We've been foraging in Nordic forests for generations. Lion's mane has been part of that journey.",
+      "Simple ingredients. Honest sourcing. That's what we believe in.",
+      "Some days call for a warm cup and quiet moment. Our mushroom blends are made for those days.",
+      "From our family to yours, we share what the forest has given us.",
+      "Nature doesn't rush. Neither do we. Each batch takes its time.",
+      "A Nordic tradition, now part of your daily ritual."
+    ],
+    "bad": [
+      "REVOLUTIONARY mushroom supplements that will TRANSFORM your cognitive performance!",
+      "Are you looking for the BEST Lion's Mane on the market? Look no further!",
+      "Our clinically-proven formula treats brain fog and cures mental fatigue.",
+      "In today's fast-paced world, you need our game-changing supplements!",
+      "BUY NOW - LIMITED TIME OFFER! Don't miss out on this incredible deal!",
+      "Unlock your brain's ULTIMATE potential with our breakthrough formula!"
+    ]
+  },
+  "scoring_thresholds": {
+    "pass": 0.8,
+    "needs_revision": 0.5,
+    "fail": 0.0
+  }
+}

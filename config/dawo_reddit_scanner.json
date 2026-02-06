@@ -1,0 +1,33 @@
+{
+  "subreddits": [
+    "Nootropics",
+    "Supplements",
+    "MushroomSupplements",
+    "Biohackers"
+  ],
+  "keywords": [
+    "lion's mane",
+    "lions mane",
+    "chaga",
+    "reishi",
+    "cordyceps",
+    "shiitake",
+    "maitake"
+  ],
+  "min_upvotes": 10,
+  "time_filter": "day",
+  "max_posts_per_subreddit": 100,
+  "rate_limit_requests_per_minute": 60,
+  "schedule": {
+    "cron": "0 2 * * *",
+    "timezone": "Europe/Oslo"
+  },
+  "reddit_api": {
+    "_comment": "Reddit API credentials are loaded from environment variables",
+    "client_id_env": "REDDIT_CLIENT_ID",
+    "client_secret_env": "REDDIT_CLIENT_SECRET",
+    "username_env": "REDDIT_USERNAME",
+    "password_env": "REDDIT_PASSWORD",
+    "user_agent": "DAWO.ECO/1.0.0 (by /u/dawo_bot)"
+  }
+}
