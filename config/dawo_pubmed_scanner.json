@@ -1,0 +1,46 @@
+{
+  "email": "${PUBMED_EMAIL}",
+  "api_key": "${PUBMED_API_KEY}",
+  "search_queries": [
+    "lion's mane cognition",
+    "lion's mane memory",
+    "chaga antioxidant",
+    "chaga immune",
+    "reishi immune",
+    "reishi sleep",
+    "cordyceps performance",
+    "cordyceps energy",
+    "Hericium erinaceus",
+    "Inonotus obliquus",
+    "Ganoderma lucidum",
+    "Ophiocordyceps sinensis",
+    "adaptogen stress",
+    "functional mushroom supplement",
+    "medicinal mushroom clinical trial"
+  ],
+  "publication_type_filters": [
+    "Randomized Controlled Trial",
+    "Meta-Analysis",
+    "Review",
+    "Systematic Review"
+  ],
+  "lookback_days": 90,
+  "max_results_per_query": 50,
+  "schedule": {
+    "cron": "0 4 * * 0",
+    "timezone": "Europe/Oslo",
+    "description": "Weekly Sunday 4 AM"
+  },
+  "score_boosts": {
+    "rct": 2.0,
+    "meta_analysis": 2.5,
+    "systematic_review": 2.0,
+    "review": 1.0,
+    "other": 0.5
+  },
+  "content_limits": {
+    "max_abstract_length": 10000,
+    "max_summary_length": 500,
+    "max_authors": 10
+  }
+}

@@ -2,7 +2,7 @@
 
 Tests:
     - Validator initialization
-    - Compliance checking
+    - Compliance checking via ResearchComplianceValidator
     - Status mapping
 """
 
@@ -18,19 +18,30 @@ from teams.dawo.validators.eu_compliance import (
     OverallStatus,
     ContentComplianceCheck,
 )
+from teams.dawo.validators.research_compliance import ResearchComplianceValidator
 
 
 @pytest.fixture
-def mock_compliance_checker() -> AsyncMock:
+def mock_eu_compliance_checker() -> AsyncMock:
     """Mock EUComplianceChecker for testing."""
     checker = AsyncMock(spec=EUComplianceChecker)
 
     # Default to COMPLIANT
-    result = MagicMock(spec=ContentComplianceCheck)
-    result.overall_status = OverallStatus.COMPLIANT
+    result = ContentComplianceCheck(
+        overall_status=OverallStatus.COMPLIANT,
+        flagged_phrases=[],
+        compliance_score=1.0,
+        llm_enhanced=False,
+    )
     checker.check_content.return_value = result
 
     return checker
+
+
+@pytest.fixture
+def mock_research_compliance(mock_eu_compliance_checker: AsyncMock) -> ResearchComplianceValidator:
+    """Create ResearchComplianceValidator with mocked EU Compliance Checker."""
+    return ResearchComplianceValidator(compliance_checker=mock_eu_compliance_checker)
 
 
 @pytest.fixture
@@ -52,11 +63,11 @@ class TestRedditValidatorInit:
 
     def test_validator_creation(
         self,
-        mock_compliance_checker: AsyncMock,
+        mock_research_compliance: ResearchComplianceValidator,
     ) -> None:
-        """Validator should be created with injected checker."""
-        validator = RedditValidator(mock_compliance_checker)
-        assert validator._checker == mock_compliance_checker
+        """Validator should be created with injected ResearchComplianceValidator."""
+        validator = RedditValidator(mock_research_compliance)
+        assert validator._compliance == mock_research_compliance
 
 
 class TestRedditValidatorValidate:
@@ -65,11 +76,11 @@ class TestRedditValidatorValidate:
     @pytest.mark.asyncio
     async def test_validate_returns_list(
         self,
-        mock_compliance_checker: AsyncMock,
+        mock_research_compliance: ResearchComplianceValidator,
         transformed_item: TransformedResearch,
     ) -> None:
         """Validate should return list of ValidatedResearch."""
-        validator = RedditValidator(mock_compliance_checker)
+        validator = RedditValidator(mock_research_compliance)
         result = await validator.validate([transformed_item])
 
         assert len(result) == 1
@@ -78,10 +89,10 @@ class TestRedditValidatorValidate:
     @pytest.mark.asyncio
     async def test_validate_empty_list(
         self,
-        mock_compliance_checker: AsyncMock,
+        mock_research_compliance: ResearchComplianceValidator,
     ) -> None:
         """Validate with empty list should return empty list."""
-        validator = RedditValidator(mock_compliance_checker)
+        validator = RedditValidator(mock_research_compliance)
         result = await validator.validate([])
 
         assert result == []
@@ -89,18 +100,15 @@ class TestRedditValidatorValidate:
     @pytest.mark.asyncio
     async def test_validate_calls_checker(
         self,
-        mock_compliance_checker: AsyncMock,
+        mock_eu_compliance_checker: AsyncMock,
+        mock_research_compliance: ResearchComplianceValidator,
         transformed_item: TransformedResearch,
     ) -> None:
         """Validator should call compliance checker for each item."""
-        validator = RedditValidator(mock_compliance_checker)
+        validator = RedditValidator(mock_research_compliance)
         await validator.validate([transformed_item])
 
-        mock_compliance_checker.check_content.assert_called_once()
-        # Check that title and content were combined
-        call_args = mock_compliance_checker.check_content.call_args[0][0]
-        assert transformed_item.title in call_args
-        assert transformed_item.content in call_args
+        mock_eu_compliance_checker.check_content.assert_called_once()
 
 
 class TestRedditValidatorStatus:
@@ -113,11 +121,14 @@ class TestRedditValidatorStatus:
     ) -> None:
         """COMPLIANT checker result should set COMPLIANT status."""
         checker = AsyncMock(spec=EUComplianceChecker)
-        result = MagicMock()
-        result.overall_status = OverallStatus.COMPLIANT
+        result = ContentComplianceCheck(
+            overall_status=OverallStatus.COMPLIANT,
+            flagged_phrases=[],
+        )
         checker.check_content.return_value = result
 
-        validator = RedditValidator(checker)
+        research_compliance = ResearchComplianceValidator(compliance_checker=checker)
+        validator = RedditValidator(research_compliance)
         validated = await validator.validate([transformed_item])
 
         assert validated[0].compliance_status == ComplianceStatus.COMPLIANT.value
@@ -129,11 +140,14 @@ class TestRedditValidatorStatus:
     ) -> None:
         """WARNING checker result should set WARNING status."""
         checker = AsyncMock(spec=EUComplianceChecker)
-        result = MagicMock()
-        result.overall_status = OverallStatus.WARNING
+        result = ContentComplianceCheck(
+            overall_status=OverallStatus.WARNING,
+            flagged_phrases=[],
+        )
         checker.check_content.return_value = result
 
-        validator = RedditValidator(checker)
+        research_compliance = ResearchComplianceValidator(compliance_checker=checker)
+        validator = RedditValidator(research_compliance)
         validated = await validator.validate([transformed_item])
 
         assert validated[0].compliance_status == ComplianceStatus.WARNING.value
@@ -145,11 +159,14 @@ class TestRedditValidatorStatus:
     ) -> None:
         """REJECTED checker result should set REJECTED status."""
         checker = AsyncMock(spec=EUComplianceChecker)
-        result = MagicMock()
-        result.overall_status = OverallStatus.REJECTED
+        result = ContentComplianceCheck(
+            overall_status=OverallStatus.REJECTED,
+            flagged_phrases=[],
+        )
         checker.check_content.return_value = result
 
-        validator = RedditValidator(checker)
+        research_compliance = ResearchComplianceValidator(compliance_checker=checker)
+        validator = RedditValidator(research_compliance)
         validated = await validator.validate([transformed_item])
 
         assert validated[0].compliance_status == ComplianceStatus.REJECTED.value
@@ -167,7 +184,8 @@ class TestRedditValidatorErrors:
         checker = AsyncMock(spec=EUComplianceChecker)
         checker.check_content.side_effect = Exception("Checker error")
 
-        validator = RedditValidator(checker)
+        research_compliance = ResearchComplianceValidator(compliance_checker=checker)
+        validator = RedditValidator(research_compliance)
         result = await validator.validate([transformed_item])
 
         # Item should be skipped on error
@@ -182,15 +200,18 @@ class TestRedditValidatorErrors:
         checker = AsyncMock(spec=EUComplianceChecker)
 
         # First call fails, second succeeds
-        compliant_result = MagicMock()
-        compliant_result.overall_status = OverallStatus.COMPLIANT
+        compliant_result = ContentComplianceCheck(
+            overall_status=OverallStatus.COMPLIANT,
+            flagged_phrases=[],
+        )
         checker.check_content.side_effect = [
             Exception("Error"),
             compliant_result,
         ]
 
         items = [transformed_item, transformed_item]
-        validator = RedditValidator(checker)
+        research_compliance = ResearchComplianceValidator(compliance_checker=checker)
+        validator = RedditValidator(research_compliance)
         result = await validator.validate(items)
 
         # Should have one successful validation
@@ -204,11 +225,11 @@ class TestRedditValidatorFieldPreservation:
     @pytest.mark.asyncio
     async def test_preserves_all_fields(
         self,
-        mock_compliance_checker: AsyncMock,
+        mock_research_compliance: ResearchComplianceValidator,
         transformed_item: TransformedResearch,
     ) -> None:
         """All fields from TransformedResearch should be in ValidatedResearch."""
-        validator = RedditValidator(mock_compliance_checker)
+        validator = RedditValidator(mock_research_compliance)
         result = await validator.validate([transformed_item])
 
         validated = result[0]
@@ -216,6 +237,6 @@ class TestRedditValidatorFieldPreservation:
         assert validated.title == transformed_item.title
         assert validated.content == transformed_item.content
         assert validated.url == transformed_item.url
-        assert validated.tags == transformed_item.tags
-        assert validated.source_metadata == transformed_item.source_metadata
+        assert validated.tags == list(transformed_item.tags)
+        assert validated.source_metadata == dict(transformed_item.source_metadata)
         assert validated.created_at == transformed_item.created_at

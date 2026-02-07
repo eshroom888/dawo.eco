@@ -4,21 +4,17 @@ Implements the validate stage of the Harvester Framework pipeline:
     Scanner → Harvester → Transformer → [Validator] → Publisher → Research Pool
 
 The validator checks transformed research items against EU Health Claims
-Regulation (EC 1924/2006) using the EUComplianceChecker.
+Regulation (EC 1924/2006) using the ResearchComplianceValidator (Story 2.8).
 
 Usage:
-    validator = RedditValidator(compliance_checker)
+    validator = RedditValidator(research_compliance_validator)
     validated = await validator.validate(transformed_items)
 """
 
 import logging
-from typing import Optional
 
 from teams.dawo.research import TransformedResearch, ComplianceStatus
-from teams.dawo.validators.eu_compliance import (
-    EUComplianceChecker,
-    OverallStatus,
-)
+from teams.dawo.validators.research_compliance import ResearchComplianceValidator
 
 from .schemas import ValidatedResearch
 
@@ -42,8 +38,13 @@ class ValidatorError(Exception):
 class RedditValidator:
     """Reddit Validator - EU compliance checking for research items.
 
-    Uses the EUComplianceChecker to validate content against
-    EU Health Claims Regulation (EC 1924/2006).
+    Uses the ResearchComplianceValidator (Story 2.8) to validate content
+    against EU Health Claims Regulation (EC 1924/2006).
+
+    The ResearchComplianceValidator provides:
+        - Citation detection (DOI, PMID, scientific URLs)
+        - Source-specific rules (stricter for social sources)
+        - Citation-aware status adjustment
 
     Sets compliance_status based on check result:
         - COMPLIANT: Content passes compliance checks
@@ -53,16 +54,16 @@ class RedditValidator:
     Configuration is injected via constructor - NEVER loads files directly.
 
     Attributes:
-        _checker: EU Compliance Checker instance
+        _compliance: Research Compliance Validator instance
     """
 
-    def __init__(self, compliance_checker: EUComplianceChecker):
-        """Initialize validator with injected compliance checker.
+    def __init__(self, research_compliance: ResearchComplianceValidator):
+        """Initialize validator with injected research compliance validator.
 
         Args:
-            compliance_checker: EUComplianceChecker instance from Story 1.2
+            research_compliance: ResearchComplianceValidator from Story 2.8
         """
-        self._checker = compliance_checker
+        self._compliance = research_compliance
 
     async def validate(
         self,
@@ -70,7 +71,8 @@ class RedditValidator:
     ) -> list[ValidatedResearch]:
         """Validate transformed items against EU compliance rules.
 
-        Checks title and content of each item and sets compliance_status.
+        Uses ResearchComplianceValidator for batch validation with
+        citation detection and source-specific rules.
 
         Args:
             items: Transformed research items from transformer stage
@@ -80,31 +82,34 @@ class RedditValidator:
         """
         logger.info("Validating %d items for EU compliance", len(items))
 
+        # Use batch validation for efficiency
+        compliance_results = await self._compliance.validate_batch(items)
+
+        # Convert to scanner-specific ValidatedResearch
         validated: list[ValidatedResearch] = []
         stats = {"compliant": 0, "warning": 0, "rejected": 0}
 
-        for item in items:
-            try:
-                result = await self._validate_single(item)
-                validated.append(result)
+        for result in compliance_results:
+            scanner_result = ValidatedResearch(
+                source=result.source,
+                title=result.title,
+                content=result.content,
+                url=result.url,
+                tags=result.tags,
+                source_metadata=result.source_metadata,
+                created_at=result.created_at,
+                compliance_status=result.compliance_status.value,
+                score=result.score,
+            )
+            validated.append(scanner_result)
 
-                # Track statistics
-                status = result.compliance_status
-                if status == ComplianceStatus.COMPLIANT.value:
-                    stats["compliant"] += 1
-                elif status == ComplianceStatus.WARNING.value:
-                    stats["warning"] += 1
-                else:
-                    stats["rejected"] += 1
-
-            except Exception as e:
-                logger.error(
-                    "Failed to validate item '%s': %s",
-                    item.title[:50],
-                    e,
-                )
-                # Skip item on validation failure
-                continue
+            # Track statistics
+            if result.compliance_status == ComplianceStatus.COMPLIANT:
+                stats["compliant"] += 1
+            elif result.compliance_status == ComplianceStatus.WARNING:
+                stats["warning"] += 1
+            else:
+                stats["rejected"] += 1
 
         logger.info(
             "Validation complete: %d compliant, %d warnings, %d rejected",
@@ -114,58 +119,3 @@ class RedditValidator:
         )
 
         return validated
-
-    async def _validate_single(
-        self,
-        item: TransformedResearch,
-    ) -> ValidatedResearch:
-        """Validate a single item.
-
-        Args:
-            item: Transformed research item
-
-        Returns:
-            ValidatedResearch with compliance status set
-        """
-        # Combine title and content for compliance check
-        text_to_check = f"{item.title}\n\n{item.content}"
-
-        # Check compliance
-        check_result = await self._checker.check_content(text_to_check)
-
-        # Map checker result to ComplianceStatus
-        compliance_status = self._map_compliance_status(check_result.overall_status)
-
-        logger.debug(
-            "Validated '%s': %s",
-            item.title[:30],
-            compliance_status,
-        )
-
-        return ValidatedResearch(
-            source=item.source.value if hasattr(item.source, "value") else str(item.source),
-            title=item.title,
-            content=item.content,
-            url=item.url,
-            tags=item.tags,
-            source_metadata=item.source_metadata,
-            created_at=item.created_at,
-            compliance_status=compliance_status,
-            score=item.score,
-        )
-
-    def _map_compliance_status(self, overall_status: OverallStatus) -> str:
-        """Map EUComplianceChecker result to ComplianceStatus.
-
-        Args:
-            overall_status: Result from EUComplianceChecker
-
-        Returns:
-            ComplianceStatus value string
-        """
-        status_map = {
-            OverallStatus.COMPLIANT: ComplianceStatus.COMPLIANT.value,
-            OverallStatus.WARNING: ComplianceStatus.WARNING.value,
-            OverallStatus.REJECTED: ComplianceStatus.REJECTED.value,
-        }
-        return status_map.get(overall_status, ComplianceStatus.WARNING.value)

@@ -32,7 +32,9 @@ from teams.dawo.research.scoring import ResearchItemScorer
 from teams.dawo.validators.eu_compliance import (
     EUComplianceChecker,
     OverallStatus,
+    ContentComplianceCheck,
 )
+from teams.dawo.validators.research_compliance import ResearchComplianceValidator
 from teams.dawo.middleware.retry import RetryConfig, RetryMiddleware, RetryResult
 
 
@@ -103,11 +105,14 @@ class TestFullPipelineIntegration:
             mock_reddit_api_response["data"]["children"][1]["data"],
         ]
 
-        # Setup mock compliance checker
+        # Setup mock compliance checker and wrap in ResearchComplianceValidator
         mock_checker = AsyncMock(spec=EUComplianceChecker)
-        compliant_result = MagicMock()
-        compliant_result.overall_status = OverallStatus.COMPLIANT
+        compliant_result = ContentComplianceCheck(
+            overall_status=OverallStatus.COMPLIANT,
+            flagged_phrases=[],
+        )
         mock_checker.check_content.return_value = compliant_result
+        research_compliance = ResearchComplianceValidator(compliance_checker=mock_checker)
 
         # Setup mock scorer
         mock_scorer = MagicMock(spec=ResearchItemScorer)
@@ -130,7 +135,7 @@ class TestFullPipelineIntegration:
         scanner = RedditScanner(config, mock_client)
         harvester = RedditHarvester(mock_client)
         transformer = RedditTransformer()
-        validator = RedditValidator(mock_checker)
+        validator = RedditValidator(research_compliance)
 
         # Create and run pipeline
         pipeline = RedditResearchPipeline(
@@ -167,9 +172,12 @@ class TestFullPipelineIntegration:
 
         # Setup other mocks
         mock_checker = AsyncMock(spec=EUComplianceChecker)
-        compliant_result = MagicMock()
-        compliant_result.overall_status = OverallStatus.COMPLIANT
+        compliant_result = ContentComplianceCheck(
+            overall_status=OverallStatus.COMPLIANT,
+            flagged_phrases=[],
+        )
         mock_checker.check_content.return_value = compliant_result
+        research_compliance = ResearchComplianceValidator(compliance_checker=mock_checker)
 
         mock_scorer = MagicMock(spec=ResearchItemScorer)
         score_result = MagicMock()
@@ -188,7 +196,7 @@ class TestFullPipelineIntegration:
         scanner = RedditScanner(config, mock_client)
         harvester = RedditHarvester(mock_client)
         transformer = RedditTransformer()
-        validator = RedditValidator(mock_checker)
+        validator = RedditValidator(research_compliance)
 
         pipeline = RedditResearchPipeline(
             scanner, harvester, transformer, validator, mock_scorer, mock_publisher
@@ -310,11 +318,14 @@ class TestResearchPoolIntegration:
 
         # Mock compliance checker with WARNING result
         mock_checker = AsyncMock(spec=EUComplianceChecker)
-        warning_result = MagicMock()
-        warning_result.overall_status = OverallStatus.WARNING
+        warning_result = ContentComplianceCheck(
+            overall_status=OverallStatus.WARNING,
+            flagged_phrases=[],
+        )
         mock_checker.check_content.return_value = warning_result
+        research_compliance = ResearchComplianceValidator(compliance_checker=mock_checker)
 
-        validator = RedditValidator(mock_checker)
+        validator = RedditValidator(research_compliance)
         result = await validator.validate([item])
 
         assert len(result) == 1

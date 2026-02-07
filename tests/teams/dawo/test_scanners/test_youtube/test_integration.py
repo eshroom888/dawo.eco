@@ -127,11 +127,21 @@ class TestFullPipelineIntegration:
             confidence_score=0.85,
         )
 
-        # Create mock compliance checker
-        mock_compliance_checker = AsyncMock()
-        mock_compliance_checker.check_content.return_value = MagicMock(
-            overall_status=MagicMock(value="COMPLIANT")
+        # Create mock compliance checker and wrap in ResearchComplianceValidator
+        from teams.dawo.validators.eu_compliance import (
+            EUComplianceChecker,
+            OverallStatus,
+            ContentComplianceCheck,
         )
+        from teams.dawo.validators.research_compliance import ResearchComplianceValidator
+
+        mock_compliance_checker = AsyncMock(spec=EUComplianceChecker)
+        compliant_result = ContentComplianceCheck(
+            overall_status=OverallStatus.COMPLIANT,
+            flagged_phrases=[],
+        )
+        mock_compliance_checker.check_content.return_value = compliant_result
+        research_compliance = ResearchComplianceValidator(compliance_checker=mock_compliance_checker)
 
         # Create mock scorer
         mock_scorer = MagicMock()
@@ -158,8 +168,8 @@ class TestFullPipelineIntegration:
         )
         transformer = YouTubeTransformer(insight_extractor=mock_insight_extractor)
 
-        # Mock the validator's compliance checker
-        validator = YouTubeValidator(compliance_checker=mock_compliance_checker)
+        # Create validator with ResearchComplianceValidator
+        validator = YouTubeValidator(research_compliance=research_compliance)
 
         # Create pipeline
         pipeline = YouTubeResearchPipeline(

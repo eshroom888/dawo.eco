@@ -1,0 +1,21 @@
+{
+  "hashtags": [
+    "lionsmane",
+    "mushroomsupplements",
+    "adaptogens",
+    "biohacking",
+    "functionalmushrooms"
+  ],
+  "competitor_accounts": [],
+  "hours_back": 24,
+  "max_posts_per_hashtag": 25,
+  "max_posts_per_account": 10,
+  "schedule": {
+    "cron": "30 2 * * *",
+    "timezone": "Europe/Oslo"
+  },
+  "api": {
+    "access_token_env": "INSTAGRAM_ACCESS_TOKEN",
+    "business_account_id_env": "INSTAGRAM_BUSINESS_ACCOUNT_ID"
+  }
+}

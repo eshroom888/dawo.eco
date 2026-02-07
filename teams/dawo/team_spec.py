@@ -94,6 +94,43 @@ from teams.dawo.scanners.youtube import (
     YouTubeResearchPipeline,
 )
 
+# Scanner imports (Instagram Scanner - Story 2.5)
+from teams.dawo.scanners.instagram import (
+    InstagramScanner,
+    ThemeExtractor,
+    HealthClaimDetector,
+    InstagramHarvester,
+    InstagramTransformer,
+    InstagramValidator,
+    InstagramResearchPipeline,
+)
+
+# Scanner imports (News Scanner - Story 2.6)
+from teams.dawo.scanners.news import (
+    NewsScanner,
+    NewsCategorizer,
+    NewsPriorityScorer,
+    NewsHarvester,
+    NewsTransformer,
+    NewsValidator,
+    NewsResearchPipeline,
+)
+
+# Scanner imports (PubMed Scanner - Story 2.7)
+from teams.dawo.scanners.pubmed import (
+    PubMedScanner,
+    PubMedClient,
+    PubMedHarvester,
+    FindingSummarizer,
+    ClaimValidator,
+    PubMedTransformer,
+    PubMedValidator,
+    PubMedResearchPipeline,
+)
+
+# Research Compliance Validator (Story 2.8)
+from teams.dawo.validators.research_compliance import ResearchComplianceValidator
+
 # Tier values - use these string constants for type safety
 # These map to TaskType enum values in teams.dawo.config.llm_tiers
 TIER_SCAN = "scan"          # → Haiku (high-volume, fast)
@@ -134,6 +171,51 @@ AGENTS: List[RegisteredAgent] = [
         agent_class=KeyInsightExtractor,
         capabilities=["youtube_research", "insight_extraction"],
         tier=TIER_GENERATE,  # Uses generate tier (Sonnet) for quality summarization
+    ),
+    # Instagram Scanner (Story 2.5)
+    RegisteredAgent(
+        name="instagram_scanner",
+        agent_class=InstagramScanner,
+        capabilities=["instagram_research", "research_scanning", "trend_monitoring"],
+        tier=TIER_SCAN,  # Uses scan tier for post discovery
+    ),
+    RegisteredAgent(
+        name="theme_extractor",
+        agent_class=ThemeExtractor,
+        capabilities=["instagram_research", "theme_extraction", "content_analysis"],
+        tier=TIER_GENERATE,  # Uses generate tier (Sonnet) for quality theme analysis
+    ),
+    RegisteredAgent(
+        name="health_claim_detector",
+        agent_class=HealthClaimDetector,
+        capabilities=["instagram_research", "claim_detection", "compliance_screening"],
+        tier=TIER_GENERATE,  # Uses generate tier (Sonnet) for accurate claim detection
+    ),
+    # News Scanner (Story 2.6)
+    RegisteredAgent(
+        name="news_scanner",
+        agent_class=NewsScanner,
+        capabilities=["news_research", "research_scanning", "regulatory_monitoring"],
+        tier=TIER_SCAN,  # Rule-based, no actual LLM calls
+    ),
+    # PubMed Scanner (Story 2.7)
+    RegisteredAgent(
+        name="pubmed_scanner",
+        agent_class=PubMedScanner,
+        capabilities=["pubmed_research", "research_scanning", "scientific_research"],
+        tier=TIER_SCAN,  # Uses scan tier for article discovery
+    ),
+    RegisteredAgent(
+        name="finding_summarizer",
+        agent_class=FindingSummarizer,
+        capabilities=["pubmed_research", "scientific_summarization", "content_generation"],
+        tier=TIER_GENERATE,  # Uses generate tier (Sonnet) for quality scientific summarization
+    ),
+    RegisteredAgent(
+        name="claim_validator",
+        agent_class=ClaimValidator,
+        capabilities=["pubmed_research", "claim_validation", "eu_compliance"],
+        tier=TIER_GENERATE,  # Uses generate tier (Sonnet) for accurate claim assessment
     ),
 ]
 
@@ -180,6 +262,14 @@ SERVICES: list[RegisteredService] = [
         capabilities=["research_scoring", "research_storage"],
         requires_session=False,  # Receives repository and scorer via injection
     ),
+    # Research Compliance Validator (Story 2.8)
+    # Shared validation service used by all scanner validators
+    RegisteredService(
+        name="research_compliance_validator",
+        service_class=ResearchComplianceValidator,
+        capabilities=["research_compliance", "content_validation", "eu_compliance"],
+        requires_session=False,  # Receives EUComplianceChecker via injection
+    ),
     # Reddit Scanner Services (Story 2.3)
     RegisteredService(
         name="reddit_harvester",
@@ -197,7 +287,7 @@ SERVICES: list[RegisteredService] = [
         name="reddit_validator",
         service_class=RedditValidator,
         capabilities=["reddit_research", "content_validation"],
-        requires_session=False,  # Receives EUComplianceChecker via injection
+        requires_session=False,  # Receives ResearchComplianceValidator via injection
     ),
     RegisteredService(
         name="reddit_research_pipeline",
@@ -222,12 +312,105 @@ SERVICES: list[RegisteredService] = [
         name="youtube_validator",
         service_class=YouTubeValidator,
         capabilities=["youtube_research", "content_validation"],
-        requires_session=False,  # Receives EUComplianceChecker via injection
+        requires_session=False,  # Receives ResearchComplianceValidator via injection
     ),
     RegisteredService(
         name="youtube_research_pipeline",
         service_class=YouTubeResearchPipeline,
         capabilities=["youtube_research", "research_pipeline"],
+        requires_session=False,  # Receives all stage components via injection
+    ),
+    # Instagram Scanner Services (Story 2.5)
+    RegisteredService(
+        name="instagram_harvester",
+        service_class=InstagramHarvester,
+        capabilities=["instagram_research"],
+        requires_session=False,  # Receives InstagramClient via injection
+    ),
+    RegisteredService(
+        name="instagram_transformer",
+        service_class=InstagramTransformer,
+        capabilities=["instagram_research"],
+        requires_session=False,  # Receives ThemeExtractor and HealthClaimDetector via injection
+    ),
+    RegisteredService(
+        name="instagram_validator",
+        service_class=InstagramValidator,
+        capabilities=["instagram_research", "content_validation"],
+        requires_session=False,  # Receives ResearchComplianceValidator via injection
+    ),
+    RegisteredService(
+        name="instagram_research_pipeline",
+        service_class=InstagramResearchPipeline,
+        capabilities=["instagram_research", "research_pipeline"],
+        requires_session=False,  # Receives all stage components via injection
+    ),
+    # News Scanner Services (Story 2.6)
+    RegisteredService(
+        name="news_categorizer",
+        service_class=NewsCategorizer,
+        capabilities=["news_research", "categorization"],
+        requires_session=False,  # Rule-based, no external dependencies
+    ),
+    RegisteredService(
+        name="news_priority_scorer",
+        service_class=NewsPriorityScorer,
+        capabilities=["news_research", "scoring"],
+        requires_session=False,  # Rule-based, no external dependencies
+    ),
+    RegisteredService(
+        name="news_harvester",
+        service_class=NewsHarvester,
+        capabilities=["news_research"],
+        requires_session=False,  # Pure transformation, no external dependencies
+    ),
+    RegisteredService(
+        name="news_transformer",
+        service_class=NewsTransformer,
+        capabilities=["news_research"],
+        requires_session=False,  # Receives NewsCategorizer and NewsPriorityScorer via injection
+    ),
+    RegisteredService(
+        name="news_validator",
+        service_class=NewsValidator,
+        capabilities=["news_research", "content_validation"],
+        requires_session=False,  # Receives ResearchComplianceValidator via injection
+    ),
+    RegisteredService(
+        name="news_research_pipeline",
+        service_class=NewsResearchPipeline,
+        capabilities=["news_research", "research_pipeline"],
+        requires_session=False,  # Receives all stage components via injection
+    ),
+    # PubMed Scanner Services (Story 2.7)
+    RegisteredService(
+        name="pubmed_client",
+        service_class=PubMedClient,
+        capabilities=["pubmed_research", "entrez_api"],
+        requires_session=False,  # Receives EntrezConfig and retry middleware via injection
+    ),
+    RegisteredService(
+        name="pubmed_harvester",
+        service_class=PubMedHarvester,
+        capabilities=["pubmed_research"],
+        requires_session=False,  # Stateless, no external dependencies
+    ),
+    RegisteredService(
+        name="pubmed_transformer",
+        service_class=PubMedTransformer,
+        capabilities=["pubmed_research"],
+        requires_session=False,  # Stateless, no external dependencies
+    ),
+    RegisteredService(
+        name="pubmed_validator",
+        service_class=PubMedValidator,
+        capabilities=["pubmed_research", "content_validation"],
+        requires_session=False,  # Receives ResearchComplianceValidator via injection
+    ),
+    RegisteredService(
+        name="pubmed_research_pipeline",
+        service_class=PubMedResearchPipeline,
+        capabilities=["pubmed_research", "research_pipeline", "scientific_research"],
         requires_session=False,  # Receives all stage components via injection
     ),
 ]

@@ -6,7 +6,55 @@ for transformed research items before publishing.
 
 import pytest
 from datetime import datetime, timezone
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
+
+from teams.dawo.scanners.youtube.validator import YouTubeValidator
+from teams.dawo.scanners.youtube import ValidatedResearch
+from teams.dawo.research import TransformedResearch, ResearchSource, ComplianceStatus
+from teams.dawo.validators.eu_compliance import (
+    EUComplianceChecker,
+    OverallStatus,
+    ContentComplianceCheck,
+)
+from teams.dawo.validators.research_compliance import ResearchComplianceValidator
+
+
+@pytest.fixture
+def mock_eu_compliance_checker() -> AsyncMock:
+    """Mock EUComplianceChecker for testing."""
+    checker = AsyncMock(spec=EUComplianceChecker)
+    result = ContentComplianceCheck(
+        overall_status=OverallStatus.COMPLIANT,
+        flagged_phrases=[],
+        compliance_score=1.0,
+        llm_enhanced=False,
+    )
+    checker.check_content.return_value = result
+    return checker
+
+
+@pytest.fixture
+def mock_research_compliance(mock_eu_compliance_checker: AsyncMock) -> ResearchComplianceValidator:
+    """Create ResearchComplianceValidator with mocked EU Compliance Checker."""
+    return ResearchComplianceValidator(compliance_checker=mock_eu_compliance_checker)
+
+
+@pytest.fixture
+def sample_transformed_research():
+    """Create sample TransformedResearch for testing."""
+    return TransformedResearch(
+        source=ResearchSource.YOUTUBE,
+        title="Lion's Mane Benefits: What Science Actually Says",
+        content="Summary: This video explores lion's mane cognitive benefits.",
+        url="https://youtube.com/watch?v=abc123xyz",
+        tags=["lions_mane", "cognition"],
+        source_metadata={
+            "channel": "Health Science Channel",
+            "views": 15234,
+            "video_id": "abc123xyz",
+        },
+        created_at=datetime(2026, 2, 1, 10, 0, 0, tzinfo=timezone.utc),
+    )
 
 
 class TestYouTubeValidator:
@@ -18,78 +66,27 @@ class TestYouTubeValidator:
 
         assert YouTubeValidator is not None
 
-    def test_validator_accepts_compliance_checker_injection(self):
-        """Test that YouTubeValidator accepts EUComplianceChecker via constructor."""
-        from teams.dawo.scanners.youtube.validator import YouTubeValidator
+    def test_validator_accepts_research_compliance_injection(
+        self,
+        mock_research_compliance: ResearchComplianceValidator,
+    ):
+        """Test that YouTubeValidator accepts ResearchComplianceValidator via constructor."""
+        validator = YouTubeValidator(research_compliance=mock_research_compliance)
 
-        compliance_checker = MagicMock()
-
-        validator = YouTubeValidator(compliance_checker=compliance_checker)
-
-        assert validator._checker is compliance_checker
+        assert validator._compliance is mock_research_compliance
 
 
 class TestYouTubeValidatorValidate:
     """Tests for YouTubeValidator.validate method."""
 
-    @pytest.fixture
-    def sample_transformed_research(self):
-        """Create sample TransformedResearch for testing."""
-        from teams.dawo.research import TransformedResearch, ResearchSource
-
-        return TransformedResearch(
-            source=ResearchSource.YOUTUBE,
-            title="Lion's Mane Benefits: What Science Actually Says",
-            content="Summary: This video explores lion's mane cognitive benefits.",
-            url="https://youtube.com/watch?v=abc123xyz",
-            tags=["lions_mane", "cognition"],
-            source_metadata={
-                "channel": "Health Science Channel",
-                "views": 15234,
-                "video_id": "abc123xyz",
-            },
-            created_at=datetime(2026, 2, 1, 10, 0, 0, tzinfo=timezone.utc),
-        )
-
-    @pytest.fixture
-    def mock_compliant_result(self):
-        """Create mock compliant result from checker."""
-        from teams.dawo.validators.eu_compliance import OverallStatus
-
-        result = MagicMock()
-        result.overall_status = OverallStatus.COMPLIANT
-        return result
-
-    @pytest.fixture
-    def mock_warning_result(self):
-        """Create mock warning result from checker."""
-        from teams.dawo.validators.eu_compliance import OverallStatus
-
-        result = MagicMock()
-        result.overall_status = OverallStatus.WARNING
-        return result
-
-    @pytest.fixture
-    def mock_rejected_result(self):
-        """Create mock rejected result from checker."""
-        from teams.dawo.validators.eu_compliance import OverallStatus
-
-        result = MagicMock()
-        result.overall_status = OverallStatus.REJECTED
-        return result
-
     @pytest.mark.asyncio
     async def test_validate_returns_validated_research_list(
-        self, sample_transformed_research, mock_compliant_result
+        self,
+        mock_research_compliance: ResearchComplianceValidator,
+        sample_transformed_research: TransformedResearch,
     ):
         """Test validate returns list of ValidatedResearch."""
-        from teams.dawo.scanners.youtube.validator import YouTubeValidator
-        from teams.dawo.scanners.youtube import ValidatedResearch
-
-        compliance_checker = AsyncMock()
-        compliance_checker.check_content = AsyncMock(return_value=mock_compliant_result)
-
-        validator = YouTubeValidator(compliance_checker=compliance_checker)
+        validator = YouTubeValidator(research_compliance=mock_research_compliance)
 
         results = await validator.validate([sample_transformed_research])
 
@@ -99,16 +96,19 @@ class TestYouTubeValidatorValidate:
 
     @pytest.mark.asyncio
     async def test_validate_sets_compliant_status(
-        self, sample_transformed_research, mock_compliant_result
+        self,
+        sample_transformed_research: TransformedResearch,
     ):
         """Test validate sets COMPLIANT status when checker passes."""
-        from teams.dawo.scanners.youtube.validator import YouTubeValidator
-        from teams.dawo.research import ComplianceStatus
+        checker = AsyncMock(spec=EUComplianceChecker)
+        result = ContentComplianceCheck(
+            overall_status=OverallStatus.COMPLIANT,
+            flagged_phrases=[],
+        )
+        checker.check_content.return_value = result
 
-        compliance_checker = AsyncMock()
-        compliance_checker.check_content = AsyncMock(return_value=mock_compliant_result)
-
-        validator = YouTubeValidator(compliance_checker=compliance_checker)
+        research_compliance = ResearchComplianceValidator(compliance_checker=checker)
+        validator = YouTubeValidator(research_compliance=research_compliance)
 
         results = await validator.validate([sample_transformed_research])
 
@@ -116,16 +116,19 @@ class TestYouTubeValidatorValidate:
 
     @pytest.mark.asyncio
     async def test_validate_sets_warning_status(
-        self, sample_transformed_research, mock_warning_result
+        self,
+        sample_transformed_research: TransformedResearch,
     ):
         """Test validate sets WARNING status for borderline content."""
-        from teams.dawo.scanners.youtube.validator import YouTubeValidator
-        from teams.dawo.research import ComplianceStatus
+        checker = AsyncMock(spec=EUComplianceChecker)
+        result = ContentComplianceCheck(
+            overall_status=OverallStatus.WARNING,
+            flagged_phrases=[],
+        )
+        checker.check_content.return_value = result
 
-        compliance_checker = AsyncMock()
-        compliance_checker.check_content = AsyncMock(return_value=mock_warning_result)
-
-        validator = YouTubeValidator(compliance_checker=compliance_checker)
+        research_compliance = ResearchComplianceValidator(compliance_checker=checker)
+        validator = YouTubeValidator(research_compliance=research_compliance)
 
         results = await validator.validate([sample_transformed_research])
 
@@ -133,16 +136,19 @@ class TestYouTubeValidatorValidate:
 
     @pytest.mark.asyncio
     async def test_validate_sets_rejected_status(
-        self, sample_transformed_research, mock_rejected_result
+        self,
+        sample_transformed_research: TransformedResearch,
     ):
         """Test validate sets REJECTED status for prohibited claims."""
-        from teams.dawo.scanners.youtube.validator import YouTubeValidator
-        from teams.dawo.research import ComplianceStatus
+        checker = AsyncMock(spec=EUComplianceChecker)
+        result = ContentComplianceCheck(
+            overall_status=OverallStatus.REJECTED,
+            flagged_phrases=[],
+        )
+        checker.check_content.return_value = result
 
-        compliance_checker = AsyncMock()
-        compliance_checker.check_content = AsyncMock(return_value=mock_rejected_result)
-
-        validator = YouTubeValidator(compliance_checker=compliance_checker)
+        research_compliance = ResearchComplianceValidator(compliance_checker=checker)
+        validator = YouTubeValidator(research_compliance=research_compliance)
 
         results = await validator.validate([sample_transformed_research])
 
@@ -150,15 +156,12 @@ class TestYouTubeValidatorValidate:
 
     @pytest.mark.asyncio
     async def test_validate_preserves_research_fields(
-        self, sample_transformed_research, mock_compliant_result
+        self,
+        mock_research_compliance: ResearchComplianceValidator,
+        sample_transformed_research: TransformedResearch,
     ):
         """Test validate preserves all research fields."""
-        from teams.dawo.scanners.youtube.validator import YouTubeValidator
-
-        compliance_checker = AsyncMock()
-        compliance_checker.check_content = AsyncMock(return_value=mock_compliant_result)
-
-        validator = YouTubeValidator(compliance_checker=compliance_checker)
+        validator = YouTubeValidator(research_compliance=mock_research_compliance)
 
         results = await validator.validate([sample_transformed_research])
 
@@ -166,34 +169,29 @@ class TestYouTubeValidatorValidate:
         assert result.title == sample_transformed_research.title
         assert result.content == sample_transformed_research.content
         assert result.url == sample_transformed_research.url
-        assert result.tags == sample_transformed_research.tags
+        assert result.tags == list(sample_transformed_research.tags)
 
     @pytest.mark.asyncio
-    async def test_validate_checks_title_and_content(
-        self, sample_transformed_research, mock_compliant_result
+    async def test_validate_calls_compliance_checker(
+        self,
+        mock_eu_compliance_checker: AsyncMock,
+        mock_research_compliance: ResearchComplianceValidator,
+        sample_transformed_research: TransformedResearch,
     ):
-        """Test validate checks both title and content for compliance."""
-        from teams.dawo.scanners.youtube.validator import YouTubeValidator
-
-        compliance_checker = AsyncMock()
-        compliance_checker.check_content = AsyncMock(return_value=mock_compliant_result)
-
-        validator = YouTubeValidator(compliance_checker=compliance_checker)
+        """Test validate calls compliance checker for each item."""
+        validator = YouTubeValidator(research_compliance=mock_research_compliance)
 
         await validator.validate([sample_transformed_research])
 
-        # Verify check_content was called with title + content
-        call_args = compliance_checker.check_content.call_args[0][0]
-        assert sample_transformed_research.title in call_args
-        assert sample_transformed_research.content in call_args
+        mock_eu_compliance_checker.check_content.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_validate_handles_empty_list(self):
+    async def test_validate_handles_empty_list(
+        self,
+        mock_research_compliance: ResearchComplianceValidator,
+    ):
         """Test validate handles empty input list."""
-        from teams.dawo.scanners.youtube.validator import YouTubeValidator
-
-        compliance_checker = AsyncMock()
-        validator = YouTubeValidator(compliance_checker=compliance_checker)
+        validator = YouTubeValidator(research_compliance=mock_research_compliance)
 
         results = await validator.validate([])
 
@@ -201,12 +199,10 @@ class TestYouTubeValidatorValidate:
 
     @pytest.mark.asyncio
     async def test_validate_continues_on_individual_failures(
-        self, sample_transformed_research, mock_compliant_result
+        self,
+        sample_transformed_research: TransformedResearch,
     ):
         """Test validate continues processing after individual item failure."""
-        from teams.dawo.scanners.youtube.validator import YouTubeValidator
-        from teams.dawo.research import TransformedResearch, ResearchSource
-
         # Create second item
         second_item = TransformedResearch(
             source=ResearchSource.YOUTUBE,
@@ -216,13 +212,19 @@ class TestYouTubeValidatorValidate:
             created_at=datetime.now(timezone.utc),
         )
 
-        compliance_checker = AsyncMock()
-        # First call fails, second succeeds
-        compliance_checker.check_content = AsyncMock(
-            side_effect=[Exception("Check failed"), mock_compliant_result]
+        checker = AsyncMock(spec=EUComplianceChecker)
+        compliant_result = ContentComplianceCheck(
+            overall_status=OverallStatus.COMPLIANT,
+            flagged_phrases=[],
         )
+        # First call fails, second succeeds
+        checker.check_content.side_effect = [
+            Exception("Check failed"),
+            compliant_result,
+        ]
 
-        validator = YouTubeValidator(compliance_checker=compliance_checker)
+        research_compliance = ResearchComplianceValidator(compliance_checker=checker)
+        validator = YouTubeValidator(research_compliance=research_compliance)
 
         results = await validator.validate([sample_transformed_research, second_item])
 

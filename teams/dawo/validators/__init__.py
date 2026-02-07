@@ -3,6 +3,7 @@
 Validator agents ensure content meets requirements:
 - EU Health Claims compliance (EC 1924/2006)
 - Brand voice consistency
+- Research compliance validation (Story 2.8)
 
 All validators operate at the 'generate' tier (defaults to sonnet for accurate judgment).
 
@@ -41,6 +42,16 @@ from .brand_voice import (
     validate_profile,
 )
 
+from .research_compliance import (
+    ResearchComplianceValidator,
+    ValidatedResearch,
+    CitationInfo,
+    ComplianceValidationResult,
+    ValidationContext,
+    ValidationStats,
+    ValidationError,
+)
+
 __all__: list[str] = [
     # EU Compliance exports
     "EUComplianceChecker",
@@ -64,4 +75,12 @@ __all__: list[str] = [
     "BrandProfile",
     "TonePillar",
     "validate_profile",
+    # Research Compliance exports (Story 2.8)
+    "ResearchComplianceValidator",
+    "ValidatedResearch",
+    "CitationInfo",
+    "ComplianceValidationResult",
+    "ValidationContext",
+    "ValidationStats",
+    "ValidationError",
 ]

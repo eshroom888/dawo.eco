@@ -50,16 +50,16 @@ development_status:
   epic-1-retrospective: done
 
   # Epic 2: Research Intelligence Pipeline (8 stories)
-  epic-2: in-progress
+  epic-2: done
   2-1-research-pool-database-storage: done
   2-2-research-item-scoring-engine: done
   2-3-reddit-research-scanner: done
   2-4-youtube-research-scanner: done
-  2-5-instagram-trend-scanner: backlog
-  2-6-industry-news-scanner: backlog
-  2-7-pubmed-scientific-research-scanner: backlog
-  2-8-research-compliance-validation: backlog
-  epic-2-retrospective: optional
+  2-5-instagram-trend-scanner: done
+  2-6-industry-news-scanner: done
+  2-7-pubmed-scientific-research-scanner: done
+  2-8-research-compliance-validation: done
+  epic-2-retrospective: done
 
   # Epic 3: Content Creation & Assets (9 stories)
   epic-3: backlog

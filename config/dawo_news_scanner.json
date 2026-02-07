@@ -1,0 +1,51 @@
+{
+  "feeds": [
+    {
+      "name": "NutraIngredients",
+      "url": "https://www.nutraingredients.com/rss/news",
+      "is_tier_1": true
+    },
+    {
+      "name": "Nutraceuticals World",
+      "url": "https://www.nutraceuticalsworld.com/rss/news",
+      "is_tier_1": true
+    },
+    {
+      "name": "FoodNavigator",
+      "url": "https://www.foodnavigator.com/rss/news",
+      "is_tier_1": true
+    },
+    {
+      "name": "NutritionInsight",
+      "url": "https://www.nutritioninsight.com/rss/",
+      "is_tier_1": false
+    },
+    {
+      "name": "EU Food Safety (EFSA)",
+      "url": "https://www.efsa.europa.eu/en/rss",
+      "is_tier_1": true
+    }
+  ],
+  "keywords": [
+    "functional mushrooms",
+    "adaptogens",
+    "supplements industry",
+    "EU regulations",
+    "health claims",
+    "novel food",
+    "Mattilsynet",
+    "lion's mane",
+    "chaga",
+    "reishi",
+    "cordyceps",
+    "mushroom extract",
+    "EC 1924/2006",
+    "EFSA opinion"
+  ],
+  "competitor_brands": [],
+  "hours_back": 24,
+  "schedule": {
+    "cron": "0 6 * * *",
+    "timezone": "Europe/Oslo"
+  }
+}
