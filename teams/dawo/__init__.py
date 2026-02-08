@@ -13,18 +13,28 @@ Usage:
 
     # Team Builder will use AGENTS list for dynamic composition
     # Agents are resolved by capability via AgentRegistry
+
+Note: AGENTS import is lazy to avoid circular imports with integrations.
 """
 
-from .team_spec import AGENTS
 
-# Capability subdirectory imports (agents added as implemented)
-from . import scanners
-from . import generators
-from . import validators
-from . import orchestrators
+def __getattr__(name: str):
+    """Lazy import to avoid circular imports with integrations module."""
+    if name == "AGENTS":
+        from .team_spec import AGENTS
+        return AGENTS
+    if name == "SERVICES":
+        from .team_spec import SERVICES
+        return SERVICES
+    if name in ("scanners", "generators", "validators", "orchestrators"):
+        import importlib
+        return importlib.import_module(f".{name}", __package__)
+    raise AttributeError(f"module 'teams.dawo' has no attribute '{name}'")
+
 
 __all__ = [
     "AGENTS",
+    "SERVICES",
     "scanners",
     "generators",
     "validators",

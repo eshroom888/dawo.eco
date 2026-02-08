@@ -62,17 +62,17 @@ development_status:
   epic-2-retrospective: done
 
   # Epic 3: Content Creation & Assets (9 stories)
-  epic-3: backlog
-  3-1-shopify-product-data-integration: backlog
-  3-2-google-drive-asset-storage: backlog
-  3-3-instagram-caption-generator: backlog
-  3-4-orshot-branded-graphics-integration: backlog
-  3-5-nano-banana-ai-image-generation: backlog
-  3-6-content-compliance-rewrite-suggestions: backlog
-  3-7-content-quality-scoring: backlog
-  3-8-auto-publish-eligibility-tagging: backlog
-  3-9-asset-usage-tracking: backlog
-  epic-3-retrospective: optional
+  epic-3: done
+  3-1-shopify-product-data-integration: done
+  3-2-google-drive-asset-storage: done
+  3-3-instagram-caption-generator: done
+  3-4-orshot-branded-graphics-integration: done
+  3-5-nano-banana-ai-image-generation: done
+  3-6-content-compliance-rewrite-suggestions: done
+  3-7-content-quality-scoring: done
+  3-8-auto-publish-eligibility-tagging: done
+  3-9-asset-usage-tracking: done
+  epic-3-retrospective: done
 
   # Epic 4: Approval & Auto-Publishing (7 stories)
   epic-4: backlog

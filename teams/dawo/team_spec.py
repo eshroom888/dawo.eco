@@ -131,6 +131,44 @@ from teams.dawo.scanners.pubmed import (
 # Research Compliance Validator (Story 2.8)
 from teams.dawo.validators.research_compliance import ResearchComplianceValidator
 
+# Shopify Integration (Story 3.1)
+# Use direct module import to avoid circular import with teams.dawo.middleware
+from integrations.shopify.client import ShopifyClient
+
+# Google Drive Integration (Story 3.2)
+# Use direct module import for consistency
+from integrations.google_drive.client import GoogleDriveClient
+
+# Instagram Caption Generator (Story 3.3)
+# Use direct module import to avoid circular import
+from teams.dawo.generators.instagram_caption.agent import CaptionGenerator
+
+# Orshot Graphics Generator (Story 3.4)
+from teams.dawo.generators.orshot_graphics.agent import OrshotRenderer
+from integrations.orshot import (
+    OrshotClient,
+    OrshotUsageTracker,
+    OrshotRateLimiter,
+)
+
+# Nano Banana AI Image Generator (Story 3.5)
+from teams.dawo.generators.nano_banana.agent import NanoBananaGenerator
+from integrations.gemini import GeminiImageClient
+
+# Compliance Rewrite Suggester (Story 3.6)
+from teams.dawo.generators.compliance_rewrite.agent import ComplianceRewriteSuggester
+
+# Content Quality Scorer (Story 3.7)
+from teams.dawo.generators.content_quality.agent import ContentQualityScorer
+
+# Auto-Publish Eligibility Tagger (Story 3.8)
+from teams.dawo.generators.auto_publish_tagger.agent import AutoPublishTagger
+from teams.dawo.generators.auto_publish_tagger.statistics import AutoPublishStatisticsService
+
+# Asset Usage Tracker (Story 3.9)
+from teams.dawo.generators.asset_usage.agent import AssetUsageTracker
+from teams.dawo.generators.asset_usage.repository import AssetUsageRepository
+
 # Tier values - use these string constants for type safety
 # These map to TaskType enum values in teams.dawo.config.llm_tiers
 TIER_SCAN = "scan"          # → Haiku (high-volume, fast)
@@ -216,6 +254,55 @@ AGENTS: List[RegisteredAgent] = [
         agent_class=ClaimValidator,
         capabilities=["pubmed_research", "claim_validation", "eu_compliance"],
         tier=TIER_GENERATE,  # Uses generate tier (Sonnet) for accurate claim assessment
+    ),
+    # Instagram Caption Generator (Story 3.3)
+    RegisteredAgent(
+        name="instagram_caption_generator",
+        agent_class=CaptionGenerator,
+        capabilities=["caption_generation", "content_generation", "norwegian"],
+        tier=TIER_GENERATE,  # Uses generate tier (Sonnet) for quality content creation
+    ),
+    # Orshot Graphics Generator (Story 3.4)
+    RegisteredAgent(
+        name="orshot_renderer",
+        agent_class=OrshotRenderer,
+        capabilities=["graphics_generation", "branded_graphics", "instagram_graphics"],
+        tier=TIER_GENERATE,  # Uses generate tier for quality template selection
+    ),
+    # Nano Banana AI Image Generator (Story 3.5)
+    RegisteredAgent(
+        name="nano_banana_generator",
+        agent_class=NanoBananaGenerator,
+        capabilities=["image_generation", "gemini", "visual_content", "ai_art"],
+        tier=TIER_GENERATE,  # Uses generate tier for image generation API
+    ),
+    # Compliance Rewrite Suggester (Story 3.6)
+    RegisteredAgent(
+        name="compliance_rewrite_suggester",
+        agent_class=ComplianceRewriteSuggester,
+        capabilities=["compliance_rewrite", "content_rewrite", "eu_compliance"],
+        tier=TIER_GENERATE,  # Uses generate tier for quality rewrites
+    ),
+    # Content Quality Scorer (Story 3.7)
+    RegisteredAgent(
+        name="content_quality_scorer",
+        agent_class=ContentQualityScorer,
+        capabilities=["content_quality", "quality_scoring", "content_evaluation"],
+        tier=TIER_GENERATE,  # Uses generate tier for AI detectability analysis
+    ),
+    # Auto-Publish Eligibility Tagger (Story 3.8)
+    RegisteredAgent(
+        name="auto_publish_tagger",
+        agent_class=AutoPublishTagger,
+        capabilities=["auto_publish", "content_tagging", "approval_eligibility"],
+        tier=TIER_GENERATE,  # Uses generate tier for future LLM enhancements
+    ),
+    # Asset Usage Tracker (Story 3.9)
+    RegisteredAgent(
+        name="asset_usage_tracker",
+        agent_class=AssetUsageTracker,
+        capabilities=["asset_tracking", "usage_analytics", "performance_metrics"],
+        tier=TIER_GENERATE,  # Uses generate tier for future LLM enhancements
     ),
 ]
 
@@ -412,5 +499,59 @@ SERVICES: list[RegisteredService] = [
         service_class=PubMedResearchPipeline,
         capabilities=["pubmed_research", "research_pipeline", "scientific_research"],
         requires_session=False,  # Receives all stage components via injection
+    ),
+    # Shopify Integration (Story 3.1)
+    RegisteredService(
+        name="shopify_client",
+        service_class=ShopifyClient,
+        capabilities=["product_data", "shopify"],
+        requires_session=False,  # Receives store_domain and access_token via injection
+    ),
+    # Google Drive Integration (Story 3.2)
+    RegisteredService(
+        name="google_drive_client",
+        service_class=GoogleDriveClient,
+        capabilities=["asset_storage", "google_drive"],
+        requires_session=False,  # Receives credentials_path and root_folder_id via injection
+    ),
+    # Orshot Integration (Story 3.4)
+    RegisteredService(
+        name="orshot_client",
+        service_class=OrshotClient,
+        capabilities=["graphics_generation", "orshot"],
+        requires_session=False,  # Receives api_key via injection
+    ),
+    RegisteredService(
+        name="orshot_usage_tracker",
+        service_class=OrshotUsageTracker,
+        capabilities=["usage_tracking", "orshot"],
+        requires_session=False,  # Receives Redis client via injection
+    ),
+    RegisteredService(
+        name="orshot_rate_limiter",
+        service_class=OrshotRateLimiter,
+        capabilities=["rate_limiting", "orshot"],
+        requires_session=False,  # Receives Redis client via injection (optional)
+    ),
+    # Gemini Integration (Story 3.5)
+    RegisteredService(
+        name="gemini_image_client",
+        service_class=GeminiImageClient,
+        capabilities=["image_generation", "gemini"],
+        requires_session=False,  # Receives api_key via injection
+    ),
+    # Auto-Publish Statistics Service (Story 3.8)
+    RegisteredService(
+        name="auto_publish_statistics_service",
+        service_class=AutoPublishStatisticsService,
+        capabilities=["auto_publish", "statistics_tracking"],
+        requires_session=False,  # In-memory storage, future database persistence via Protocol
+    ),
+    # Asset Usage Repository (Story 3.9)
+    RegisteredService(
+        name="asset_usage_repository",
+        service_class=AssetUsageRepository,
+        capabilities=["asset_tracking", "usage_storage"],
+        requires_session=False,  # In-memory storage, future database persistence via Protocol
     ),
 ]

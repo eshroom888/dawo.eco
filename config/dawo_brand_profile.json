@@ -108,5 +108,128 @@
     "pass": 0.8,
     "needs_revision": 0.5,
     "fail": 0.0
+  },
+  "norwegian": {
+    "tone_pillars": {
+      "warm": {
+        "description": "Varm, inviterende, personlig - ikke korporativ eller kald",
+        "positive_markers": ["vi", "vår", "våre", "sammen", "dele", "nyte", "glad i", "venner", "familie", "fellesskap", "velkommen"],
+        "negative_markers": ["konsern", "forbrukere", "brukere", "kunder", "klienter", "interessenter", "utnytte"]
+      },
+      "educational": {
+        "description": "Informativ først, salg deretter - ikke påtrengende eller stressende",
+        "positive_markers": ["lære", "oppdage", "forstå", "utforske", "tradisjon", "historie", "kunnskap", "nysgjerrig", "forskning", "studere"],
+        "negative_markers": ["kjøp nå", "begrenset tid", "handle raskt", "ikke gå glipp av", "eksklusivt tilbud", "skynd deg", "siste sjanse", "bestill nå", "salget avsluttes"]
+      },
+      "nordic_simplicity": {
+        "description": "Rent, minimalt, autentisk - ikke rotete eller hyperbolsk",
+        "positive_markers": ["skog", "natur", "nordisk", "skandinavisk", "ren", "enkel", "autentisk", "ærlig", "minimal", "tradisjon", "arv"],
+        "negative_markers": ["fantastisk", "utrolig", "revolusjonerende", "game-changer", "ultimate", "beste noensinne", "sinnssykt", "galskap"]
+      }
+    },
+    "forbidden_terms": {
+      "medicinal": [
+        "behandling", "behandler", "behandle",
+        "kur", "kurerer", "kurere",
+        "helbrede", "helbreder", "helbredelse",
+        "medisin", "medisinsk",
+        "sykdom", "sykdommer",
+        "lidelse", "lidelser",
+        "symptom", "symptomer",
+        "diagnose", "diagnostisere",
+        "resept", "reseptbelagt",
+        "pasient", "pasienter",
+        "terapi", "terapeutisk",
+        "klinisk"
+      ],
+      "sales_pressure": [
+        "kjøp nå",
+        "begrenset tid",
+        "handle raskt",
+        "ikke gå glipp av",
+        "eksklusivt tilbud",
+        "skynd deg",
+        "siste sjanse",
+        "bestill nå",
+        "salget avsluttes",
+        "så lenge lageret rekker",
+        "engangstilbud",
+        "spesialtilbud"
+      ],
+      "superlatives": [
+        "best", "beste",
+        "størst", "største",
+        "kraftigst", "kraftigste",
+        "ultimate",
+        "revolusjonerende",
+        "game-changer",
+        "gjennombrudd",
+        "mirakel",
+        "utrolig",
+        "fantastisk",
+        "sinnssykt"
+      ]
+    },
+    "ai_generic_patterns": [
+      "I dagens hektiske verden",
+      "Er du på utkikk etter",
+      "Se ikke lenger",
+      "Enten du er .* eller .*",
+      "Det er ingen hemmelighet at",
+      "Til syvende og sist",
+      "Ta din .* til neste nivå",
+      "Lås opp ditt potensial",
+      "Transformer din",
+      "Løft din",
+      "Supercharge din",
+      "Game-changing",
+      "Revolusjonerende",
+      "I denne artikkelen",
+      "La oss dykke inn",
+      "Uten videre om og men",
+      "Det sier seg selv",
+      "For å oppsummere"
+    ],
+    "style_examples": {
+      "good": [
+        "Vi har sanket i nordiske skoger i generasjoner. Løvemanke har vært en del av den reisen.",
+        "Enkle råvarer. Ærlig opprinnelse. Det er det vi tror på.",
+        "Noen dager kaller på en varm kopp og et stille øyeblikk. Våre soppblandinger er laget for de dagene.",
+        "Fra vår familie til din – vi deler det skogen har gitt oss.",
+        "Naturen stresser ikke. Det gjør ikke vi heller. Hver batch tar sin tid.",
+        "En nordisk tradisjon, nå en del av din daglige rutine.",
+        "Stillhet i skogen. Varme i koppen. Enkelt og godt.",
+        "Chaga har vært en del av nordisk tradisjon i hundrevis av år. Vi fortsetter arven."
+      ],
+      "bad": [
+        "REVOLUSJONERENDE sopptilskudd som vil TRANSFORMERE din kognitive ytelse!",
+        "Er du på utkikk etter den BESTE løvemanke på markedet? Se ikke lenger!",
+        "Vår klinisk beviste formel behandler hjernetåke og kurerer mental utmattelse.",
+        "I dagens hektiske verden trenger du våre game-changing tilskudd!",
+        "KJØP NÅ - BEGRENSET TID! Ikke gå glipp av dette utrolige tilbudet!",
+        "Lås opp hjernens ULTIMATE potensial med vår gjennombruddsformel!"
+      ]
+    },
+    "caption_guidelines": {
+      "length": {
+        "min_words": 180,
+        "max_words": 220
+      },
+      "structure": [
+        "Hook: Opening line that captures attention naturally",
+        "Story: Educational content about mushrooms/wellness",
+        "Connection: Relate to Nordic lifestyle/seasons",
+        "CTA: Gentle call-to-action (link in bio, check out, etc.)"
+      ],
+      "hashtags": {
+        "max_count": 15,
+        "brand_tags": ["#DAWO", "#DAWOmushrooms", "#nordisksopp"],
+        "topic_pools": {
+          "wellness": ["#naturligvelvære", "#hverdagsmagi", "#nordiskliv"],
+          "mushrooms": ["#løvemanke", "#chaga", "#sopp", "#funksjonellesopp"],
+          "lifestyle": ["#enklehverdag", "#slowliving", "#nordiskdesign"]
+        }
+      }
+    }
   }
 }

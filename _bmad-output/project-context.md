@@ -205,3 +205,96 @@ grep -rE "(haiku|sonnet|opus)" teams/dawo/ --include="*.py" | grep -v "test_"
 - ✅ Config loaded via constructor injection
 - ✅ No direct file loading in business classes
 - ✅ Validation in `__post_init__` or constructor
+
+---
+
+## Epic 3: Content Generation Patterns
+
+### Content Generator Framework
+
+Content generators follow this pipeline:
+1. **Research Selection** - Pick high-scoring item from Research Pool
+2. **Product Enrichment** - Fetch product data via Shopify integration
+3. **Caption Generation** - LLM generates Norwegian caption (tier="generate")
+4. **Asset Generation** - Orshot graphic OR Gemini AI image
+5. **Validation** - EU Compliance + Brand Voice checks
+6. **Scoring** - Quality score calculation
+7. **Submission** - Submit to approval queue with assets
+
+### LLM-Chaining Pattern (from Epic 2)
+
+For multi-stage LLM operations, follow the Instagram Scanner pattern:
+
+```python
+# Stage 1: Extract themes (tier="generate")
+themes = await theme_extractor.extract(content)
+
+# Stage 2: Detect claims using themes (tier="generate")
+claims = await claim_detector.detect(content, themes=themes)
+
+# Each stage is independently mockable and testable
+```
+
+**Testing LLM chains:**
+```python
+# Use mock factories for consistent test setup
+def create_theme_extractor_mock(themes: list[str]) -> Mock:
+    mock = AsyncMock(spec=ThemeExtractor)
+    mock.extract.return_value = themes
+    return mock
+```
+
+### Integration Clients (Epic 3)
+
+All integrations in `integrations/` folder with Protocol + Implementation:
+
+| Integration | Protocol | Client | Purpose |
+|-------------|----------|--------|---------|
+| Shopify | `ShopifyClientProtocol` | `ShopifyClient` | Product data (1hr cache) |
+| Google Drive | `GoogleDriveClientProtocol` | `GoogleDriveClient` | Asset storage |
+| Orshot | `OrshotClientProtocol` | `OrshotClient` | Branded graphics |
+| Gemini | `GeminiImageClientProtocol` | `GeminiImageClient` | AI images |
+
+**Always inject via Protocol for testability:**
+```python
+class CaptionGenerator:
+    def __init__(
+        self,
+        shopify: ShopifyClientProtocol,
+        brand_profile: BrandProfile,
+    ):
+        self._shopify = shopify
+        self._brand = brand_profile
+```
+
+### Norwegian Content Rules
+
+- ✅ Captions: 180-220 words in Norwegian
+- ✅ Use `config/dawo_brand_profile.json` → `norwegian` section
+- ✅ Check forbidden terms in BOTH English and Norwegian
+- ✅ Hashtags: max 15, include brand tags (#DAWO, #DAWOmushrooms)
+- ❌ Never machine-translate English captions - generate natively
+
+### Asset Storage Folders
+
+Google Drive structure (auto-created):
+```
+DAWO.ECO/Assets/
+├── Generated/    # Nano Banana AI images
+├── Orshot/       # Branded graphics
+└── Archive/      # Used assets + performance data
+```
+
+Filename pattern: `{date}_{type}_{topic}_{id}.{ext}`
+
+### Quality Scoring Components (Story 3.7)
+
+Content quality score (0-10) comprises:
+1. **Brand Voice Alignment** - Matches DAWO tone pillars
+2. **EU Compliance** - No prohibited claims
+3. **AI Detectability** - Human-like writing
+4. **Visual Quality** - Asset resolution/composition
+5. **Engagement Prediction** - Based on historical data
+6. **Relevance** - Research source quality
+
+Auto-publish threshold: score >= 9 AND compliance = PASS
