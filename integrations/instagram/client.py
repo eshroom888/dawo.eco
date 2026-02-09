@@ -121,6 +121,22 @@ class InstagramPublishClientProtocol(Protocol):
         """
         ...
 
+    async def get_permalink(
+        self,
+        media_id: str,
+    ) -> str:
+        """Get the permalink for a published post.
+
+        Story 4-5, Task 2.4: Get permalink for tracking.
+
+        Args:
+            media_id: Instagram media ID
+
+        Returns:
+            Permalink URL for the post
+        """
+        ...
+
 
 class InstagramPublishClient:
     """Instagram Graph API client for publishing content.
@@ -390,6 +406,92 @@ class InstagramPublishClient:
             raise InstagramPublishError("No media ID in publish response")
 
         return media_id
+
+    async def get_permalink(
+        self,
+        media_id: str,
+    ) -> str:
+        """Get the permalink for a published post.
+
+        Story 4-5, Task 2.4: Get permalink for tracking.
+
+        Args:
+            media_id: Instagram media ID
+
+        Returns:
+            Permalink URL for the post
+
+        Raises:
+            InstagramPublishError: If API request fails
+        """
+        url = f"{self.GRAPH_API_BASE}/{media_id}"
+        params = {
+            "fields": "permalink",
+            "access_token": self._access_token,
+        }
+
+        response = await self._client.get(
+            url,
+            params=params,
+            timeout=self._timeout,
+        )
+
+        data = response.json()
+        self._check_error(data)
+
+        permalink = data.get("permalink")
+        if not permalink:
+            # Fallback to constructed URL
+            return f"https://www.instagram.com/p/{media_id}/"
+
+        return permalink
+
+    async def get_media_insights(
+        self,
+        media_id: str,
+    ) -> dict:
+        """Get initial metrics for a published post.
+
+        Story 4-5, Task 2.4: Get initial metrics (optional).
+
+        Args:
+            media_id: Instagram media ID
+
+        Returns:
+            Dict with engagement metrics (likes, comments, etc.)
+
+        Raises:
+            InstagramPublishError: If API request fails
+        """
+        url = f"{self.GRAPH_API_BASE}/{media_id}/insights"
+        params = {
+            "metric": "engagement,impressions,reach,saved",
+            "access_token": self._access_token,
+        }
+
+        try:
+            response = await self._client.get(
+                url,
+                params=params,
+                timeout=self._timeout,
+            )
+
+            data = response.json()
+            self._check_error(data)
+
+            # Parse insights into a simpler format
+            insights = {}
+            for item in data.get("data", []):
+                name = item.get("name")
+                values = item.get("values", [])
+                if values:
+                    insights[name] = values[0].get("value", 0)
+
+            return insights
+
+        except Exception as e:
+            logger.warning(f"Failed to get media insights: {e}")
+            return {}
 
     def _check_error(self, data: dict) -> None:
         """Check API response for errors.

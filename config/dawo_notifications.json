@@ -1,0 +1,35 @@
+{
+  "version": "2026-02",
+  "description": "Notification configuration for DAWO approval and publish alerts",
+
+  "approval_notifications": {
+    "enabled": true,
+    "webhook_url": "${DISCORD_APPROVAL_WEBHOOK_URL}",
+    "threshold": 5,
+    "cooldown_minutes": 60,
+    "dashboard_url": "https://app.imagoeco.com/dawo/approval"
+  },
+
+  "publish_notifications": {
+    "enabled": true,
+    "webhook_url": "${DISCORD_PUBLISH_WEBHOOK_URL}",
+    "batch_window_minutes": 15,
+    "daily_summary_hour": 22,
+    "dashboard_url": "https://app.imagoeco.com/dawo/approval",
+    "success_notifications": true,
+    "failure_notifications": true,
+    "batch_notifications": true,
+    "daily_summary": true
+  },
+
+  "retry": {
+    "max_attempts": 5,
+    "backoff_schedule": [60, 300, 900, 3600],
+    "ttl_hours": 24
+  },
+
+  "background_job": {
+    "interval_minutes": 5,
+    "batch_size": 10
+  }
+}

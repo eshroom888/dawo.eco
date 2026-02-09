@@ -21,6 +21,11 @@ Usage:
     await client.send_approval_notification(pending_count=5, compliance_warnings=1)
     await client.send_publish_notification("Post title", instagram_url="https://...")
     await client.send_daily_summary(published_count=3, pending_count=2)
+
+    # Story 4.7 publish notification methods
+    await client.send_publish_failed_notification(...)
+    await client.send_batch_publish_notification(posts=[...])
+    await client.send_daily_summary_notification(published_count=3, pending_count=2, top_post={...})
 """
 
 from integrations.discord.client import (
@@ -29,6 +34,8 @@ from integrations.discord.client import (
     DiscordEmbed,
     EmbedField,
     EmbedColor,
+    DiscordRateLimitError,
+    DiscordAuthError,
 )
 
 __all__ = [
@@ -37,4 +44,6 @@ __all__ = [
     "DiscordEmbed",
     "EmbedField",
     "EmbedColor",
+    "DiscordRateLimitError",
+    "DiscordAuthError",
 ]

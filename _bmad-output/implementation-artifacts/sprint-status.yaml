@@ -75,15 +75,15 @@ development_status:
   epic-3-retrospective: done
 
   # Epic 4: Approval & Auto-Publishing (7 stories)
-  epic-4: backlog
-  4-1-content-approval-queue-ui: backlog
-  4-2-approve-reject-edit-actions: backlog
-  4-3-batch-approval-capability: backlog
-  4-4-content-scheduling-interface: backlog
-  4-5-instagram-graph-api-auto-publishing: backlog
-  4-6-discord-approval-notifications: backlog
-  4-7-discord-publish-notifications: backlog
-  epic-4-retrospective: optional
+  epic-4: done
+  4-1-content-approval-queue-ui: done
+  4-2-approve-reject-edit-actions: done
+  4-3-batch-approval-capability: done
+  4-4-content-scheduling-interface: done
+  4-5-instagram-graph-api-auto-publishing: done
+  4-6-discord-approval-notifications: done
+  4-7-discord-publish-notifications: done
+  epic-4-retrospective: done
 
   # Epic 5: B2B Sales Pipeline (5 stories)
   epic-5: backlog

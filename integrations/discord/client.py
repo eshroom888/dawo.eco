@@ -16,12 +16,43 @@ Enhanced for Epic 4:
 
 import logging
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
 from typing import Any, Optional, Protocol, runtime_checkable
 
 import httpx
 
 logger = logging.getLogger(__name__)
+
+
+class DiscordRateLimitError(Exception):
+    """Raised when Discord rate limit is hit.
+
+    Story 4-6, Task 5.5: Handle Discord-specific rate limit errors.
+
+    Attributes:
+        retry_after: Seconds to wait before retrying (from Retry-After header)
+        is_global: Whether this is a global rate limit
+    """
+
+    def __init__(
+        self,
+        message: str,
+        retry_after: float = 0,
+        is_global: bool = False,
+    ) -> None:
+        super().__init__(message)
+        self.retry_after = retry_after
+        self.is_global = is_global
+
+
+class DiscordAuthError(Exception):
+    """Raised when Discord authentication fails.
+
+    Story 4-6, Task 5.5: Handle Discord auth errors (401, 403).
+    """
+
+    pass
 
 
 class EmbedColor(Enum):
@@ -33,6 +64,9 @@ class EmbedColor(Enum):
     INFO = 0x0099FF  # Blue
     APPROVAL = 0x9B59B6  # Purple
     PUBLISH = 0x2ECC71  # Emerald
+    PUBLISH_SUCCESS = 0x4CAF50  # Green (Material Design)
+    PUBLISH_FAILED = 0xF44336  # Red (Material Design)
+    DAILY_SUMMARY = 0x2196F3  # Blue (Material Design)
 
 
 @dataclass
@@ -170,14 +204,74 @@ class DiscordWebhookClient:
         self._timeout = timeout
         self._client = httpx.AsyncClient()
 
+    def _handle_error_response(self, response: httpx.Response) -> None:
+        """Handle Discord error responses with specific error types.
+
+        Story 4-6, Task 5.5: Handle Discord-specific error codes.
+
+        Args:
+            response: The HTTP response to check
+
+        Raises:
+            DiscordRateLimitError: If rate limited (429)
+            DiscordAuthError: If auth failed (401, 403)
+        """
+        status = response.status_code
+
+        # Rate limit handling (429)
+        if status == 429:
+            retry_after = 0.0
+            is_global = False
+
+            # Try to get Retry-After from header
+            if "Retry-After" in response.headers:
+                try:
+                    retry_after = float(response.headers["Retry-After"])
+                except ValueError:
+                    retry_after = 60.0  # Default to 60 seconds
+
+            # Check if global rate limit
+            if "X-RateLimit-Global" in response.headers:
+                is_global = response.headers["X-RateLimit-Global"].lower() == "true"
+
+            # Also check response body for retry_after
+            try:
+                data = response.json()
+                if "retry_after" in data:
+                    retry_after = float(data["retry_after"])
+                if data.get("global", False):
+                    is_global = True
+            except Exception:
+                pass
+
+            logger.warning(
+                f"Discord rate limit hit, retry after {retry_after}s (global: {is_global})"
+            )
+            raise DiscordRateLimitError(
+                f"Rate limited, retry after {retry_after}s",
+                retry_after=retry_after,
+                is_global=is_global,
+            )
+
+        # Auth errors (401, 403)
+        if status in (401, 403):
+            logger.error(f"Discord auth error: {status} - {response.text}")
+            raise DiscordAuthError(f"Discord authentication failed: {status}")
+
     async def send_webhook(self, message: str) -> bool:
         """Send a message via Discord webhook.
+
+        Story 4-6, Task 5.5: Handle Discord-specific error codes.
 
         Args:
             message: The message content to send
 
         Returns:
             True if sent successfully, False otherwise
+
+        Raises:
+            DiscordRateLimitError: If rate limited (429) - caller can retry after delay
+            DiscordAuthError: If authentication failed (401, 403)
         """
         try:
             response = await self._client.post(
@@ -189,12 +283,19 @@ class DiscordWebhookClient:
             if response.status_code in (200, 204):
                 logger.debug("Discord webhook sent successfully")
                 return True
-            else:
-                logger.warning(
-                    f"Discord webhook returned {response.status_code}: {response.text}"
-                )
-                return False
 
+            # Check for Discord-specific errors
+            self._handle_error_response(response)
+
+            # Other non-success status
+            logger.warning(
+                f"Discord webhook returned {response.status_code}: {response.text}"
+            )
+            return False
+
+        except (DiscordRateLimitError, DiscordAuthError):
+            # Re-raise Discord-specific errors for caller handling
+            raise
         except httpx.TimeoutException:
             logger.warning("Discord webhook timed out")
             return False
@@ -212,12 +313,18 @@ class DiscordWebhookClient:
     ) -> bool:
         """Send a rich embed via Discord webhook.
 
+        Story 4-6, Task 5.5: Handle Discord-specific error codes.
+
         Args:
             embed: DiscordEmbed object with rich content
             content: Optional plain text to accompany embed
 
         Returns:
             True if sent successfully, False otherwise
+
+        Raises:
+            DiscordRateLimitError: If rate limited (429) - caller can retry after delay
+            DiscordAuthError: If authentication failed (401, 403)
         """
         try:
             payload: dict[str, Any] = {"embeds": [embed.to_dict()]}
@@ -233,12 +340,19 @@ class DiscordWebhookClient:
             if response.status_code in (200, 204):
                 logger.debug("Discord embed sent successfully")
                 return True
-            else:
-                logger.warning(
-                    f"Discord embed returned {response.status_code}: {response.text}"
-                )
-                return False
 
+            # Check for Discord-specific errors
+            self._handle_error_response(response)
+
+            # Other non-success status
+            logger.warning(
+                f"Discord embed returned {response.status_code}: {response.text}"
+            )
+            return False
+
+        except (DiscordRateLimitError, DiscordAuthError):
+            # Re-raise Discord-specific errors for caller handling
+            raise
         except httpx.TimeoutException:
             logger.warning("Discord embed timed out")
             return False
@@ -300,6 +414,8 @@ class DiscordWebhookClient:
         self,
         post_title: str,
         instagram_url: Optional[str] = None,
+        publish_time: Optional[datetime] = None,
+        caption_excerpt: str = "",
         success: bool = True,
         error_message: Optional[str] = None,
     ) -> bool:
@@ -308,6 +424,8 @@ class DiscordWebhookClient:
         Args:
             post_title: Title or excerpt of the published post
             instagram_url: URL to the Instagram post if successful
+            publish_time: When the post was published
+            caption_excerpt: First 100 chars of caption
             success: Whether publish succeeded
             error_message: Error description if failed
 
@@ -315,11 +433,26 @@ class DiscordWebhookClient:
             True if sent successfully, False otherwise
         """
         if success:
+            fields = []
+            if publish_time:
+                fields.append(
+                    EmbedField(
+                        name="Published",
+                        value=publish_time.strftime("%Y-%m-%d %H:%M UTC"),
+                        inline=True,
+                    )
+                )
+
+            description = post_title[:200]
+            if caption_excerpt:
+                description = f"{post_title[:100]}\n\n_{caption_excerpt[:100]}_"
+
             embed = DiscordEmbed(
                 title="✅ Published to Instagram",
-                description=post_title[:200],
-                color=EmbedColor.SUCCESS.value,
+                description=description,
+                color=EmbedColor.PUBLISH_SUCCESS.value,
                 url=instagram_url,
+                fields=fields,
                 footer_text="DAWO Auto-Publisher",
             )
         else:
@@ -330,26 +463,118 @@ class DiscordWebhookClient:
             embed = DiscordEmbed(
                 title="❌ Publish Failed",
                 description=post_title[:200],
-                color=EmbedColor.ERROR.value,
+                color=EmbedColor.PUBLISH_FAILED.value,
                 fields=fields,
                 footer_text="DAWO Auto-Publisher - Manual retry needed",
             )
 
         return await self.send_embed(embed)
 
-    async def send_daily_summary(
+    async def send_publish_failed_notification(
+        self,
+        post_title: str,
+        error_reason: str,
+        error_type: str,
+        dashboard_url: str,
+        scheduled_time: datetime,
+    ) -> bool:
+        """Send notification when a publish fails (Story 4.7, AC #3).
+
+        Args:
+            post_title: Title/excerpt of the failed post
+            error_reason: Human-readable error message
+            error_type: Error category (API_ERROR, RATE_LIMIT, etc.)
+            dashboard_url: Link to retry in dashboard
+            scheduled_time: Original scheduled publish time
+
+        Returns:
+            True if sent successfully, False otherwise
+        """
+        fields = [
+            EmbedField(
+                name="Error Type",
+                value=error_type.replace("_", " ").title(),
+                inline=True,
+            ),
+            EmbedField(
+                name="Scheduled Time",
+                value=scheduled_time.strftime("%Y-%m-%d %H:%M UTC"),
+                inline=True,
+            ),
+            EmbedField(
+                name="Details",
+                value=error_reason[:500],
+                inline=False,
+            ),
+            EmbedField(
+                name="Action Required",
+                value=f"[Retry in Dashboard]({dashboard_url})",
+                inline=False,
+            ),
+        ]
+
+        embed = DiscordEmbed(
+            title="❌ Publish Failed",
+            description=post_title[:200],
+            color=EmbedColor.PUBLISH_FAILED.value,
+            fields=fields,
+            footer_text="DAWO Auto-Publisher - Manual intervention required",
+        )
+
+        return await self.send_embed(embed)
+
+    async def send_batch_publish_notification(
+        self,
+        posts: list[dict],
+    ) -> bool:
+        """Send batched notification for multiple publishes (Story 4.7, AC #2).
+
+        Args:
+            posts: List of published post details [{title, instagram_url, publish_time}]
+
+        Returns:
+            True if sent successfully, False otherwise
+        """
+        post_count = len(posts)
+
+        # Build post list with links
+        post_links = []
+        for i, post in enumerate(posts[:10], 1):  # Limit to 10 to avoid embed limits
+            title = post.get("title", "Untitled")[:50]
+            url = post.get("instagram_url", "")
+            if url:
+                post_links.append(f"{i}. [{title}]({url})")
+            else:
+                post_links.append(f"{i}. {title}")
+
+        description = "\n".join(post_links)
+        if post_count > 10:
+            description += f"\n\n_...and {post_count - 10} more_"
+
+        embed = DiscordEmbed(
+            title=f"✅ Published {post_count} Posts",
+            description=description,
+            color=EmbedColor.PUBLISH_SUCCESS.value,
+            footer_text="DAWO Auto-Publisher - Batch notification",
+        )
+
+        return await self.send_embed(embed)
+
+    async def send_daily_summary_notification(
         self,
         published_count: int,
         pending_count: int,
         failed_count: int = 0,
+        top_post: Optional[dict] = None,
         dashboard_url: Optional[str] = None,
     ) -> bool:
-        """Send daily publishing summary (Epic 4, Story 4.7).
+        """Send daily publishing summary notification (Story 4.7, AC #4).
 
         Args:
             published_count: Posts published today
             pending_count: Posts still pending
             failed_count: Posts that failed to publish
+            top_post: Optional top performing post info {title, engagement}
             dashboard_url: URL to the dashboard
 
         Returns:
@@ -360,11 +585,11 @@ class DiscordWebhookClient:
             color = EmbedColor.WARNING.value
             status_emoji = "⚠️"
         elif published_count > 0:
-            color = EmbedColor.SUCCESS.value
-            status_emoji = "✅"
+            color = EmbedColor.DAILY_SUMMARY.value
+            status_emoji = "📊"
         else:
             color = EmbedColor.INFO.value
-            status_emoji = "📊"
+            status_emoji = "📋"
 
         fields = [
             EmbedField(name="Published", value=f"✅ {published_count}", inline=True),
@@ -374,6 +599,17 @@ class DiscordWebhookClient:
         if failed_count > 0:
             fields.append(
                 EmbedField(name="Failed", value=f"❌ {failed_count}", inline=True)
+            )
+
+        if top_post:
+            title = top_post.get("title", "")[:50]
+            engagement = top_post.get("engagement", 0)
+            fields.append(
+                EmbedField(
+                    name="Top Performer",
+                    value=f"🏆 {title} ({engagement} engagements)",
+                    inline=False,
+                )
             )
 
         embed = DiscordEmbed(
