@@ -1,0 +1,10 @@
+{
+  "enabled": true,
+  "storage_path": "evidence/reports",
+  "default_template": "standard",
+  "company_name": "DAWO.ECO",
+  "max_evidence_per_report": 100,
+  "screenshot_max_width_px": 600,
+  "available_templates": ["standard", "mattilsynet", "eu_authority", "legal"],
+  "pdf_variant": "pdf/a-3u"
+}

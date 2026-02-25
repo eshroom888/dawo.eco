@@ -9,7 +9,7 @@ Endpoints:
 """
 
 import logging
-from datetime import date, datetime, time, timedelta
+from datetime import UTC, date, datetime, time, timedelta
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -52,7 +52,7 @@ def is_imminent(scheduled_time: datetime) -> bool:
     """Check if a scheduled time is within 1 hour."""
     if not scheduled_time:
         return False
-    time_to_publish = (scheduled_time - datetime.utcnow()).total_seconds()
+    time_to_publish = (scheduled_time - datetime.now(UTC)).total_seconds()
     return 0 < time_to_publish < IMMINENT_THRESHOLD_SECONDS
 
 
@@ -361,6 +361,24 @@ async def reschedule_item(
     # Commit the transaction
     await db.commit()
 
+    # Story 7-9, Task 6.3: Calendar sync on reschedule (fire-and-forget)
+    try:
+        import os
+        from arq import create_pool
+        from arq.connections import RedisSettings
+
+        redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379")
+        redis_settings = RedisSettings.from_dsn(redis_url)
+        redis_pool = await create_pool(redis_settings)
+        await redis_pool.enqueue_job(
+            "sync_calendar_event",
+            item_id,
+            "rescheduled",
+        )
+        await redis_pool.close()
+    except Exception:
+        logger.warning("Calendar sync enqueue failed on reschedule for item %s", item_id)
+
     return RescheduleResponse(
         success=True,
         message=f"Rescheduled to {request.new_publish_time.isoformat()}",
@@ -412,7 +430,7 @@ async def retry_publish(
 
     # Check if recently attempted (within 1 minute) unless force=True
     if not force and item.publish_attempts and item.publish_attempts >= 3:
-        if item.updated_at and (datetime.utcnow() - item.updated_at).total_seconds() < 60:
+        if item.updated_at and (datetime.now(UTC) - item.updated_at).total_seconds() < 60:
             raise HTTPException(
                 status_code=429,
                 detail="Too many recent attempts. Wait 1 minute or use force=true.",
@@ -421,10 +439,10 @@ async def retry_publish(
     # Story 4-5, Task 6.3: Reset status to SCHEDULED and clear publish_error
     item.status = ApprovalStatus.SCHEDULED.value
     item.publish_error = None
-    item.updated_at = datetime.utcnow()
+    item.updated_at = datetime.now(UTC)
 
     # Set publish time to now for immediate retry
-    publish_time = datetime.utcnow() + timedelta(seconds=5)
+    publish_time = datetime.now(UTC) + timedelta(seconds=5)
     item.scheduled_publish_time = publish_time
 
     await db.commit()

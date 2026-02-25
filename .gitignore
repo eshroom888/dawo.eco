@@ -39,6 +39,17 @@ ENV/
 .DS_Store
 Thumbs.db
 
+# Credentials & secrets
+credentials/
+.mcp.json
+
+# AI tooling
+.agent/
+.claude/
+
+# Windows artifacts
+nul
+
 # Project specific
 *.log
 .cache/

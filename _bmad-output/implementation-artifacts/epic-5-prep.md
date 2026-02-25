@@ -12,17 +12,17 @@
 
 | # | Task | Owner | Status | Notes |
 |---|------|-------|--------|-------|
-| 1 | Pre-submission code review checklist | Dev Team | Pending | Reduce 100% fix rate seen in Epic 4 |
-| 2 | Add deprecation linting to CI | Charlie | Pending | Catch `datetime.utcnow()` style issues early |
-| 3 | Mock verification pattern documentation | Charlie | Pending | Mocks must validate `response.success` |
+| 1 | Pre-submission code review checklist | Dev Team | **Done** | [docs/pre-submission-checklist.md](../../docs/pre-submission-checklist.md) |
+| 2 | Add deprecation linting to CI | Charlie | **Done** | [.github/workflows/ci.yml](../../.github/workflows/ci.yml) + ruff DTZ rules |
+| 3 | Mock verification pattern documentation | Charlie | **Done** | [docs/mock-verification-patterns.md](../../docs/mock-verification-patterns.md) |
 
 ### Technical Debt (Priority: Medium)
 
 | # | Task | Owner | Status | Notes |
 |---|------|-------|--------|-------|
-| 1 | Complete WebSocket event wiring | Dev Team | Pending | Events emitted but connections need review |
-| 2 | Integration test coverage | QA | Pending | End-to-end tests for publish flow |
-| 3 | Rate limit config externalization | Dev Team | Pending | Move rate limit values to config |
+| 1 | Complete WebSocket event wiring | Dev Team | **Done** | [ui/backend/routers/websocket.py](../../ui/backend/routers/websocket.py) + fixed datetime.utcnow |
+| 2 | Integration test coverage | QA | **Done** | [tests/integration/test_publish_flow.py](../../tests/integration/test_publish_flow.py) |
+| 3 | Rate limit config externalization | Dev Team | **Done** | [core/config.py](../../core/config.py) + [config/dawo_rate_limits.json](../../config/dawo_rate_limits.json) |
 
 ---
 
@@ -32,26 +32,26 @@
 
 | # | Task | Owner | Status | Notes |
 |---|------|-------|--------|-------|
-| 1 | LinkedIn API research | Dev Team | Pending | B2B lead data access, rate limits |
-| 2 | Gmail API OAuth setup | eshroom | Pending | Send permissions for outreach |
-| 3 | Lead enrichment services evaluation | Dev Team | Pending | Clearbit, Hunter.io, Apollo alternatives |
-| 4 | CRM integration patterns | Dev Team | Pending | If connecting to external CRM |
+| 1 | LinkedIn API research | Dev Team | **Done** | [docs/research/linkedin-api-research.md](../../docs/research/linkedin-api-research.md) |
+| 2 | Gmail API OAuth setup | eshroom | **Done** | [docs/research/gmail-api-setup.md](../../docs/research/gmail-api-setup.md) - Token saved |
+| 3 | Lead enrichment services evaluation | Dev Team | **Done** | [docs/research/lead-enrichment-services.md](../../docs/research/lead-enrichment-services.md) - Recommend Hunter.io |
+| 4 | CRM integration patterns | Dev Team | **Done** | [docs/research/crm-integration-patterns.md](../../docs/research/crm-integration-patterns.md) - Recommend internal DB for MVP |
 
 ### Infrastructure Setup
 
 | # | Task | Owner | Status | Notes |
 |---|------|-------|--------|-------|
-| 1 | Gmail API credentials | eshroom | Pending | OAuth 2.0 for sending |
-| 2 | Lead database schema design | Architect | Pending | B2B lead storage model |
+| 1 | Gmail API credentials | eshroom | **Done** | `credentials/gmail-token.json` - gmail.send scope |
+| 2 | Lead database schema design | Architect | **Done** | [core/leads/models.py](../../core/leads/models.py) + migration |
 | 3 | Email template system | Dev Team | Pending | Personalized outreach templates |
 
 ### Knowledge Development
 
 | # | Task | Owner | Status | Notes |
 |---|------|-------|--------|-------|
-| 1 | B2B lead scoring algorithms | Dev Team | Pending | How to prioritize leads |
+| 1 | B2B lead scoring algorithms | Dev Team | **Done** | [docs/research/lead-scoring-approach.md](../../docs/research/lead-scoring-approach.md) |
 | 2 | Email deliverability best practices | Dev Team | Pending | Avoid spam filters |
-| 3 | GDPR compliance for B2B outreach | Legal/Dev | Pending | Norwegian/EU requirements |
+| 3 | GDPR compliance for B2B outreach | Legal/Dev | **Done** | [docs/research/gdpr-b2b-outreach.md](../../docs/research/gdpr-b2b-outreach.md) |
 
 ---
 
@@ -69,11 +69,11 @@
 
 ## Definition of Ready for Epic 5
 
-- [ ] All "High" priority carryover tasks completed
-- [ ] Gmail API credentials obtained and tested
-- [ ] Lead database schema designed and reviewed
-- [ ] B2B lead scoring approach documented
-- [ ] GDPR compliance requirements clarified
+- [x] All "High" priority carryover tasks completed
+- [x] Gmail API credentials obtained and tested
+- [x] Lead database schema designed and reviewed
+- [x] B2B lead scoring approach documented
+- [x] GDPR compliance requirements clarified
 
 ---
 

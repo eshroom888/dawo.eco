@@ -38,17 +38,24 @@ class RetryableHttpClient:
         _middleware: RetryMiddleware instance
     """
 
-    def __init__(self, config: RetryConfig, api_name: str) -> None:
+    def __init__(
+        self,
+        config: RetryConfig,
+        api_name: str,
+        service_health_registry=None,
+    ) -> None:
         """Initialize HTTP client with injected config.
 
         Args:
             config: RetryConfig with timeout, retry settings
             api_name: API name for logging context (e.g., "instagram", "discord")
+            service_health_registry: Optional ServiceHealthRegistry for health tracking
+                (Story 7-10, Task 2.2). Passed through to RetryMiddleware.
         """
         self._config = config
         self._api_name = api_name
         self._httpx_client = httpx.AsyncClient()
-        self._middleware = RetryMiddleware(config)
+        self._middleware = RetryMiddleware(config, service_health_registry=service_health_registry)
 
     async def get(
         self,

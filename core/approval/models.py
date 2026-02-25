@@ -322,6 +322,14 @@ class ApprovalItem(Base):
         server_default="0",
     )
 
+    # Google Calendar sync (Story 7-9)
+    google_calendar_event_id: Mapped[Optional[str]] = mapped_column(
+        String(255),
+        nullable=True,
+        default=None,
+        index=True,  # Index for calendar sync lookup
+    )
+
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(
         default=func.now(),

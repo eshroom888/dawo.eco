@@ -23,7 +23,7 @@ Usage:
 import asyncio
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, UTC
 from enum import Enum
 from typing import Any, AsyncGenerator, Optional
 from uuid import uuid4
@@ -64,7 +64,7 @@ class PublishEvent:
     event_type: PublishEventType
     item_id: str
     data: dict = field(default_factory=dict)
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
     event_id: str = field(default_factory=lambda: str(uuid4()))
 
     def to_dict(self) -> dict:

@@ -86,38 +86,38 @@ development_status:
   epic-4-retrospective: done
 
   # Epic 5: B2B Sales Pipeline (5 stories)
-  epic-5: backlog
-  5-1-b2b-lead-research-scanner: backlog
-  5-2-lead-information-enrichment: backlog
-  5-3-personalized-outreach-draft-generator: backlog
-  5-4-gmail-api-integration: backlog
-  5-5-lead-pipeline-status-tracking: backlog
-  epic-5-retrospective: optional
+  epic-5: done
+  5-1-b2b-lead-research-scanner: done
+  5-2-lead-information-enrichment: done
+  5-3-personalized-outreach-draft-generator: done
+  5-4-gmail-api-integration: done
+  5-5-lead-pipeline-status-tracking: done
+  epic-5-retrospective: done
 
   # Epic 6: CleanMarket & Regulatory Intelligence (10 stories)
-  epic-6: backlog
-  6-1-eu-health-claims-register-monitor: backlog
-  6-2-novel-food-catalogue-monitor: backlog
-  6-3-mattilsynet-regulatory-monitor: backlog
-  6-4-new-claims-activation-alerts: backlog
-  6-5-competitor-content-scanner: backlog
-  6-6-health-claim-extraction-engine: backlog
-  6-7-eu-violation-detection: backlog
-  6-8-evidence-collection-screenshots: backlog
-  6-9-searchable-evidence-database: backlog
-  6-10-on-demand-violation-reports: backlog
-  epic-6-retrospective: optional
+  epic-6: done
+  6-1-eu-health-claims-register-monitor: done
+  6-2-novel-food-catalogue-monitor: done
+  6-3-mattilsynet-regulatory-monitor: done
+  6-4-new-claims-activation-alerts: done
+  6-5-competitor-content-scanner: done
+  6-6-health-claim-extraction-engine: done
+  6-7-eu-violation-detection: done
+  6-8-evidence-collection-screenshots: done
+  6-9-searchable-evidence-database: done
+  6-10-on-demand-violation-reports: done
+  epic-6-retrospective: done
 
   # Epic 7: Analytics & System Operations (10 stories)
-  epic-7: backlog
-  7-1-instagram-engagement-metrics-collection: backlog
-  7-2-utm-click-through-tracking: backlog
-  7-3-shopify-sales-attribution: backlog
-  7-4-post-publish-quality-scoring: backlog
-  7-5-performance-feedback-loop: backlog
-  7-6-agent-schedule-configuration: backlog
-  7-7-manual-team-agent-triggers: backlog
-  7-8-execution-logs-status-dashboard: backlog
-  7-9-google-calendar-sync: backlog
-  7-10-graceful-api-degradation-handling: backlog
+  epic-7: done
+  7-1-instagram-engagement-metrics-collection: done
+  7-2-utm-click-through-tracking: done
+  7-3-shopify-sales-attribution: done
+  7-4-post-publish-quality-scoring: done
+  7-5-performance-feedback-loop: done
+  7-6-agent-schedule-configuration: done
+  7-7-manual-team-agent-triggers: done
+  7-8-execution-logs-status-dashboard: done
+  7-9-google-calendar-sync: done
+  7-10-graceful-api-degradation-handling: done
   epic-7-retrospective: optional

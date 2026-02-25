@@ -1,0 +1,35 @@
+{
+  "enabled": true,
+  "schedule_cron": "0 3 * * *",
+  "instagram": {
+    "enabled": true,
+    "scan_window_days": 7,
+    "max_posts_per_competitor": 25
+  },
+  "websites": {
+    "enabled": true,
+    "request_delay_seconds": 5,
+    "max_pages_per_domain": 20
+  },
+  "request_delay_seconds": 3,
+  "max_retries": 3,
+  "timeout_seconds": 30,
+  "user_agent": "DAWO-ECO-CompetitorMonitor/1.0 (+https://imagoeco.com/bot)",
+  "competitors": [
+    {
+      "name": "ExampleCompetitor",
+      "instagram_username": "example_competitor",
+      "website_urls": ["https://example-competitor.com/products"],
+      "is_primary": true
+    }
+  ],
+  "health_language_keywords": [
+    "boost", "improve", "enhance", "support", "treat", "cure",
+    "prevent", "heal", "strengthen", "immunity", "immune",
+    "cognitive", "energy", "anti-inflammatory", "antioxidant",
+    "adaptogen", "nootropic",
+    "stotter", "bidrar", "fremmer", "styrker", "forbedrer",
+    "immunforsvar", "behandler", "kurerer", "forebygger",
+    "helbreder", "helsepastander", "kosttilskudd"
+  ]
+}

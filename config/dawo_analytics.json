@@ -1,0 +1,59 @@
+{
+  "collection_intervals": [
+    {"label": "baseline", "delay_hours": 1},
+    {"label": "24h", "delay_hours": 24},
+    {"label": "48h", "delay_hours": 48},
+    {"label": "7d", "delay_hours": 168}
+  ],
+  "rate_limit_buffer": 10,
+  "retry_max_attempts": 3,
+  "retry_base_delay": 2.0,
+  "discord_channel": "${DISCORD_ANALYTICS_WEBHOOK_URL}",
+  "utm_config": {
+    "short_link_base_url": "${SHORT_LINK_BASE_URL}",
+    "default_attribution_window_days": 30,
+    "code_length": 8
+  },
+  "attribution": {
+    "webhook_secret": "${SHOPIFY_WEBHOOK_SECRET}",
+    "polling_interval_hours": 1,
+    "attribution_window_days": 30,
+    "max_touchpoints": 50
+  },
+  "feedback_loop": {
+    "min_posts_threshold": 100,
+    "weight_change_threshold": 0.05,
+    "min_hashtag_posts": 3,
+    "top_hashtags_limit": 20,
+    "enabled": true
+  },
+  "agent_scheduler": {
+    "enabled": true,
+    "check_interval_seconds": 60,
+    "max_concurrent_agents": 5,
+    "default_timezone": "UTC",
+    "seed_on_startup": true
+  },
+  "quality_scoring": {
+    "variance_threshold": 3.0,
+    "min_posts_for_correlation": 50,
+    "scoring_delay_days": 7,
+    "weights": {
+      "engagement_vs_avg": 0.30,
+      "reach_vs_avg": 0.20,
+      "click_through_rate": 0.20,
+      "conversions": 0.15,
+      "comment_sentiment": 0.15
+    },
+    "ctr_scale": {
+      "max_ctr_pct": 5.0,
+      "min_score": 1.0,
+      "max_score": 10.0
+    },
+    "conversion_scale": {
+      "max_orders": 5,
+      "min_score": 2.0,
+      "max_score": 10.0
+    }
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "monitor": {
+    "schedule_cron": "0 5 * * 0",
+    "source_url": "https://data.europa.eu/data/datasets/eu-register-on-nutrition-and-health-claims",
+    "download_url": "https://ec.europa.eu/food/food-feed-portal/backend/claims/files/EU_Register_on_nutrition_and_health_claims.xls",
+    "request_delay_seconds": 5,
+    "max_retries": 3
+  },
+  "substances": {
+    "mushroom": [
+      "beta-glucan",
+      "beta-glucans",
+      "ganoderma",
+      "ganoderma lucidum",
+      "reishi",
+      "lentinula edodes",
+      "shiitake",
+      "hericium erinaceus",
+      "lion's mane",
+      "cordyceps",
+      "chaga",
+      "inonotus obliquus",
+      "maitake",
+      "grifola frondosa",
+      "tremella",
+      "pleurotus",
+      "agaricus"
+    ],
+    "adaptogen": [
+      "ashwagandha",
+      "withania somnifera",
+      "rhodiola",
+      "rhodiola rosea",
+      "astragalus",
+      "eleuthero",
+      "eleutherococcus",
+      "holy basil",
+      "tulsi",
+      "schisandra",
+      "panax ginseng",
+      "ginseng",
+      "maca",
+      "lepidium meyenii"
+    ],
+    "vitamins_minerals": [
+      "vitamin d",
+      "vitamin d3",
+      "vitamin b12",
+      "vitamin c",
+      "selenium",
+      "zinc",
+      "iron",
+      "magnesium",
+      "potassium",
+      "calcium"
+    ]
+  },
+  "alert_on_status_change": [
+    "on_hold->authorised",
+    "non_authorised->authorised",
+    "authorised->withdrawn",
+    "authorised->non_authorised"
+  ]
+}

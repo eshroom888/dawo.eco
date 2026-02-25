@@ -14,6 +14,7 @@ import logging
 import re
 from dataclasses import dataclass, field
 from datetime import datetime, timezone, timedelta
+from decimal import Decimal
 from typing import Any, Optional, Protocol, runtime_checkable
 
 from teams.dawo.middleware.retry import RetryConfig, RetryResult
@@ -181,6 +182,99 @@ query GetProductsByCollection($handle: String!, $first: Int!) {
     }
 }
 """ % PRODUCT_FIELDS_FRAGMENT
+
+# Story 7-3: Order attribution GraphQL queries
+ORDERS_WITH_ATTRIBUTION_QUERY = """
+query GetOrdersWithAttribution($first: Int!, $query: String, $after: String) {
+    orders(first: $first, query: $query, sortKey: CREATED_AT, after: $after) {
+        edges {
+            node {
+                id
+                name
+                createdAt
+                totalPriceSet { shopMoney { amount currencyCode } }
+                lineItems(first: 50) {
+                    edges {
+                        node {
+                            title
+                            quantity
+                            variant { id price }
+                            product { id handle }
+                        }
+                    }
+                }
+                customerJourneySummary {
+                    ready
+                    daysToConversion
+                    firstVisit {
+                        occurredAt
+                        utmParameters { source medium campaign content }
+                    }
+                    lastVisit {
+                        occurredAt
+                        utmParameters { source medium campaign content }
+                    }
+                    moments(first: 50) {
+                        edges {
+                            node {
+                                ... on CustomerVisit {
+                                    occurredAt
+                                    utmParameters { source medium campaign content }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            cursor
+        }
+        pageInfo { hasNextPage endCursor }
+    }
+}
+"""
+
+ORDER_BY_GID_QUERY = """
+query GetOrder($id: ID!) {
+    order(id: $id) {
+        id
+        name
+        createdAt
+        totalPriceSet { shopMoney { amount currencyCode } }
+        lineItems(first: 50) {
+            edges {
+                node {
+                    title
+                    quantity
+                    variant { id price }
+                    product { id handle }
+                }
+            }
+        }
+        customerJourneySummary {
+            ready
+            daysToConversion
+            firstVisit {
+                occurredAt
+                utmParameters { source medium campaign content }
+            }
+            lastVisit {
+                occurredAt
+                utmParameters { source medium campaign content }
+            }
+            moments(first: 50) {
+                edges {
+                    node {
+                        ... on CustomerVisit {
+                            occurredAt
+                            utmParameters { source medium campaign content }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+"""
 
 
 class ShopifyClient:
@@ -584,6 +678,173 @@ class ShopifyClient:
             self._add_to_cache(f"id:{product.id}", product)
 
         return products
+
+    # --- Story 7-3: Order Attribution Methods ---
+
+    def _map_customer_visit(self, visit_data: Optional[dict]) -> Optional["CustomerVisit"]:
+        """Map a GraphQL CustomerVisit to the DTO.
+
+        Args:
+            visit_data: Raw GraphQL visit node
+
+        Returns:
+            CustomerVisit or None if data is missing
+        """
+        if not visit_data:
+            return None
+
+        from integrations.shopify.orders import CustomerVisit
+        from datetime import datetime, timezone
+
+        utm = visit_data.get("utmParameters")
+        occurred_at_str = visit_data.get("occurredAt", "")
+
+        try:
+            occurred_at = datetime.fromisoformat(occurred_at_str.replace("Z", "+00:00"))
+        except (ValueError, AttributeError):
+            occurred_at = datetime.now(timezone.utc)
+
+        return CustomerVisit(
+            occurred_at=occurred_at,
+            utm_source=utm.get("source") if utm else None,
+            utm_medium=utm.get("medium") if utm else None,
+            utm_campaign=utm.get("campaign") if utm else None,
+            utm_content=utm.get("content") if utm else None,
+        )
+
+    def _map_to_order(self, node: dict[str, Any]) -> "ShopifyOrder":
+        """Map Shopify GraphQL order node to ShopifyOrder DTO.
+
+        Args:
+            node: Raw GraphQL order node
+
+        Returns:
+            ShopifyOrder frozen dataclass
+        """
+        from integrations.shopify.orders import (
+            CustomerVisit,
+            OrderAttribution,
+            OrderLineItem,
+            ShopifyOrder,
+        )
+
+        # Parse price
+        price_set = node.get("totalPriceSet", {}).get("shopMoney", {})
+        total_price = Decimal(price_set.get("amount", "0.00"))
+        currency = price_set.get("currencyCode", "NOK")
+
+        # Parse line items
+        line_items = []
+        for edge in node.get("lineItems", {}).get("edges", []):
+            li_node = edge.get("node", {})
+            product = li_node.get("product") or {}
+            variant = li_node.get("variant") or {}
+            line_items.append(OrderLineItem(
+                product_id=product.get("id", ""),
+                variant_id=variant.get("id", ""),
+                title=li_node.get("title", ""),
+                quantity=li_node.get("quantity", 0),
+                price=Decimal(variant.get("price", "0.00")),
+                product_handle=product.get("handle", ""),
+            ))
+
+        # Parse created_at
+        created_at_str = node.get("createdAt", "")
+        try:
+            created_at = datetime.fromisoformat(created_at_str.replace("Z", "+00:00"))
+        except (ValueError, AttributeError):
+            created_at = datetime.now(timezone.utc)
+
+        # Parse customer journey
+        journey = node.get("customerJourneySummary") or {}
+        ready = journey.get("ready", False)
+
+        first_visit = self._map_customer_visit(journey.get("firstVisit"))
+        last_visit = self._map_customer_visit(journey.get("lastVisit"))
+
+        moments = []
+        for edge in (journey.get("moments") or {}).get("edges", []):
+            visit = self._map_customer_visit(edge.get("node"))
+            if visit:
+                moments.append(visit)
+
+        attribution = OrderAttribution(
+            first_visit=first_visit,
+            last_visit=last_visit,
+            moments=moments,
+            days_to_conversion=journey.get("daysToConversion"),
+        )
+
+        return ShopifyOrder(
+            id=node.get("id", ""),
+            name=node.get("name", ""),
+            total_price=total_price,
+            currency=currency,
+            line_items=line_items,
+            created_at=created_at,
+            customer_journey_ready=ready,
+            attribution=attribution,
+        )
+
+    async def get_orders_since(
+        self, since: datetime, limit: int = 50
+    ) -> list["ShopifyOrder"]:
+        """Get paid orders created since a given datetime.
+
+        Story 7-3, Task 2.1: Queries orders with customerJourneySummary.
+        Filters for paid orders only.
+
+        Args:
+            since: Fetch orders created after this datetime
+            limit: Maximum number of orders per page
+
+        Returns:
+            List of ShopifyOrder DTOs
+        """
+        query_filter = f"created_at:>'{since.strftime('%Y-%m-%dT%H:%M:%S')}' financial_status:paid"
+
+        data = await self._execute_graphql(
+            ORDERS_WITH_ATTRIBUTION_QUERY,
+            {"first": limit, "query": query_filter},
+        )
+
+        if data is None:
+            logger.warning("Order attribution query failed")
+            return []
+
+        edges = data.get("data", {}).get("orders", {}).get("edges", [])
+        orders = []
+        for edge in edges:
+            order = self._map_to_order(edge["node"])
+            orders.append(order)
+
+        logger.info("Fetched %d orders since %s", len(orders), since.isoformat())
+        return orders
+
+    async def get_order_by_id(self, order_gid: str) -> Optional["ShopifyOrder"]:
+        """Get a single order by Shopify global ID.
+
+        Story 7-3, Task 2.2: Single order lookup with attribution.
+
+        Args:
+            order_gid: Shopify order global ID (e.g., "gid://shopify/Order/12345")
+
+        Returns:
+            ShopifyOrder or None if not found
+        """
+        data = await self._execute_graphql(
+            ORDER_BY_GID_QUERY,
+            {"id": order_gid},
+        )
+
+        if data is None:
+            return None
+
+        order_node = data.get("data", {}).get("order")
+        if not order_node:
+            return None
+
+        return self._map_to_order(order_node)
 
     def clear_cache(self) -> None:
         """Clear the product cache."""

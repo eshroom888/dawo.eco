@@ -9,10 +9,10 @@ Endpoints:
 """
 
 import logging
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Optional
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 
 from core.publishing import get_metrics_collector
@@ -79,11 +79,14 @@ class OverallHealthResponse(BaseModel):
     """Response for overall system health.
 
     Story 4-5, Task 10.3: Overall health response.
+    Story 7-10, Task 7.1: Added degraded_services and queued_operations fields.
     """
 
     status: str = Field(..., description="Health status: healthy, degraded, unhealthy")
     timestamp: datetime = Field(..., description="Check timestamp")
     services: dict = Field(default_factory=dict, description="Service statuses")
+    degraded_services: int = Field(default=0, description="Number of degraded/unhealthy external services")
+    queued_operations: int = Field(default=0, description="Total queued operations across all services")
 
     model_config = {"from_attributes": True}
 
@@ -110,7 +113,7 @@ async def get_health() -> OverallHealthResponse:
 
     return OverallHealthResponse(
         status=status,
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(UTC),
         services={
             "instagram_publishing": {
                 "healthy": health.healthy,
@@ -119,6 +122,68 @@ async def get_health() -> OverallHealthResponse:
             },
         },
     )
+
+
+async def _get_optional_health_registry():
+    """Optional dependency: returns registry or None if not configured."""
+    from ui.backend.routers.degradation import get_health_registry
+
+    try:
+        return await get_health_registry()
+    except NotImplementedError:
+        return None
+
+
+@router.get("/services")
+async def get_services_health(registry=Depends(_get_optional_health_registry)):
+    """Get external service health status.
+
+    Story 7-10, Task 7.1: Alias to /api/system/status for backward compat.
+    Delegates to the degradation router's system status endpoint.
+
+    Returns:
+        SystemStatusResponse from degradation module
+    """
+    if registry is None:
+        return {"overall_status": "healthy", "services": [], "total_queued_operations": 0, "last_updated": datetime.now(UTC)}
+
+    try:
+        from ui.backend.schemas.degradation import SystemStatusResponse, ServiceHealthResponse
+
+        statuses = await registry.get_all_statuses()
+
+        services = []
+        total_queued = 0
+        for s in statuses:
+            queued = await registry.get_queued_count(s.service_name)
+            services.append(ServiceHealthResponse(
+                service_name=s.service_name,
+                status=s.status,
+                consecutive_failures=s.consecutive_failures,
+                last_success=s.last_success,
+                last_failure=s.last_failure,
+                last_error=s.last_error,
+                queued_operations=queued,
+            ))
+            total_queued += queued
+
+        status_values = [s.status for s in services]
+        if "unhealthy" in status_values:
+            overall = "unhealthy"
+        elif "degraded" in status_values:
+            overall = "degraded"
+        else:
+            overall = "healthy"
+
+        return SystemStatusResponse(
+            overall_status=overall,
+            services=services,
+            total_queued_operations=total_queued,
+            last_updated=datetime.now(UTC),
+        )
+    except Exception as e:
+        logger.warning("Failed to get services health: %s", e)
+        return {"overall_status": "unknown", "services": [], "total_queued_operations": 0, "last_updated": datetime.now(UTC)}
 
 
 @router.get("/publishing", response_model=PublishingHealthResponse)

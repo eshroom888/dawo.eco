@@ -135,13 +135,20 @@ class RetryMiddleware:
         delay = middleware._calculate_delay(attempt=2)  # 2.0 seconds
     """
 
-    def __init__(self, config: RetryConfig) -> None:
+    def __init__(
+        self,
+        config: RetryConfig,
+        service_health_registry=None,
+    ) -> None:
         """Initialize retry middleware with injected configuration.
 
         Args:
             config: RetryConfig with retry behavior settings
+            service_health_registry: Optional ServiceHealthRegistry for health tracking
+                (Story 7-10, Task 2.1). None = no health recording (backward compat).
         """
         self._config = config
+        self._service_health_registry = service_health_registry
 
     def _calculate_delay(self, attempt: int) -> float:
         """Calculate delay with exponential backoff and jitter.
@@ -252,10 +259,32 @@ class RetryMiddleware:
         # Invalid format - use default
         return DEFAULT_RATE_LIMIT_WAIT
 
+    async def _record_health(self, context: str, success: bool, error: Optional[str] = None) -> None:
+        """Record health status if registry is available (fire-and-forget).
+
+        Story 7-10, Task 2.1: Optional health recording after each operation.
+        Never raises — registry failures are logged and swallowed.
+
+        Args:
+            context: Operation context string (used as service name)
+            success: Whether the operation succeeded
+            error: Error message if failed
+        """
+        if self._service_health_registry is None:
+            return
+        try:
+            if success:
+                await self._service_health_registry.record_success(context)
+            else:
+                await self._service_health_registry.record_failure(context, error or "Unknown error")
+        except Exception as e:
+            logger.warning("Health recording failed for %s: %s", context, e)
+
     async def execute_with_retry(
         self,
         operation: Callable[[], Any],
         context: str,
+        cache_fallback: Optional[Any] = None,
     ) -> RetryResult:
         """Execute an operation with retry logic.
 
@@ -266,13 +295,37 @@ class RetryMiddleware:
         - Uses Retry-After header for wait duration
         - Does NOT count against max_retries
 
+        Pre-check optimization (Story 7-10, Task 2.3):
+        - If service is "unhealthy" AND cache_fallback is provided → return cache immediately
+        - If service is "unhealthy" AND no cache_fallback → proceed with API call (might recover)
+        - NEVER blocks an operation — unhealthy status is advisory only
+
         Args:
             operation: Async callable to execute
             context: Description for logging (e.g., "instagram_publish")
+            cache_fallback: Optional cached data to use when service is unhealthy.
+                If provided and service is unhealthy, skips API call and returns this.
 
         Returns:
             RetryResult with success/failure status and response data
         """
+        # Pre-check: skip API if unhealthy + cache available (Task 2.3)
+        if cache_fallback is not None and self._service_health_registry is not None:
+            try:
+                status = await self._service_health_registry.get_status(context)
+                if status.status == "unhealthy":
+                    logger.info(
+                        "[%s] Service unhealthy, using cache fallback (skipping API call)",
+                        context,
+                    )
+                    return RetryResult(
+                        success=True,
+                        response=cache_fallback,
+                        attempts=0,
+                    )
+            except Exception as e:
+                logger.warning("Pre-check failed for %s: %s — proceeding with API call", context, e)
+
         last_error: Optional[str] = None
         attempt = 0
         total_calls = 0  # Track total calls including rate limit retries
@@ -282,6 +335,7 @@ class RetryMiddleware:
 
             try:
                 response = await operation()
+                await self._record_health(context, success=True)
                 return RetryResult(
                     success=True,
                     response=response,
@@ -309,6 +363,7 @@ class RetryMiddleware:
                     logger.warning(
                         f"[{context}] Non-retryable error (HTTP {e.response.status_code}): {e}"
                     )
+                    await self._record_health(context, success=False, error=last_error)
                     return RetryResult(
                         success=False,
                         attempts=attempt + 1,
@@ -342,6 +397,7 @@ class RetryMiddleware:
                 # Unexpected error - don't retry
                 last_error = str(e)
                 logger.error(f"[{context}] Unexpected error: {e}")
+                await self._record_health(context, success=False, error=last_error)
                 return RetryResult(
                     success=False,
                     attempts=attempt + 1,
@@ -354,6 +410,7 @@ class RetryMiddleware:
             f"[{context}] All {self._config.max_retries} retries exhausted. "
             f"Last error: {last_error}"
         )
+        await self._record_health(context, success=False, error=last_error)
         return RetryResult(
             success=False,
             attempts=self._config.max_retries,

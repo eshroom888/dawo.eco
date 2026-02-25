@@ -1,0 +1,84 @@
+{% extends "base_report.html" %}
+
+{% block title %}EU Regulation Violation Report - {{ company_name }}{% endblock %}
+{% block heading %}Violation Report: EC 1924/2006 Non-Compliance{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .regulation-ref { font-style: italic; color: #555; }
+    .formal-intro { margin-bottom: 16pt; font-size: 9.5pt; line-height: 1.6; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="formal-intro">
+    <p>This report documents instances of non-compliance with <strong>Regulation (EC) No 1924/2006</strong> of the European Parliament and of the Council on nutrition and health claims made on foods, as amended.</p>
+    <p>All evidence has been captured with timestamp verification and SHA-256 integrity hashing to ensure authenticity.</p>
+</div>
+
+<h2>Executive Summary</h2>
+<div class="summary-box">
+    <table class="meta-table">
+        <tr><td>Total Violations Documented</td><td>{{ evidence_count }}</td></tr>
+        <tr><td>High Severity (Art. 10, Art. 14.1a)</td><td class="severity-high">{{ severity_counts.high }}</td></tr>
+        <tr><td>Medium Severity (Art. 13.1)</td><td class="severity-medium">{{ severity_counts.medium }}</td></tr>
+        <tr><td>Low Severity (Art. 13.1 borderline)</td><td class="severity-low">{{ severity_counts.low }}</td></tr>
+        <tr><td>Operators Involved</td><td>{{ competitor_count }}</td></tr>
+        <tr><td>Observation Period</td><td>{{ date_range_display }}</td></tr>
+    </table>
+</div>
+
+<h2>Documented Violations</h2>
+{% for item in evidence_list %}
+<div class="evidence-card">
+    <div class="header">
+        <h3>Violation {{ loop.index }}: {{ item.competitor_name }}</h3>
+        <span class="severity-{{ item.severity }}">{{ item.severity | upper }}</span>
+    </div>
+    <table class="meta-table">
+        <tr><td>Health Claim</td><td>{{ item.claim_text }}</td></tr>
+        <tr><td>Claim Category</td><td>{{ item.claim_category }}</td></tr>
+        <tr><td>Regulation Violated</td><td class="regulation-ref">{{ item.regulation_violated or "EC 1924/2006" }}</td></tr>
+        <tr><td>Violation Type</td><td>{{ item.violation_type }}</td></tr>
+        <tr><td>Source URL</td><td>{{ item.source_url }}</td></tr>
+        <tr><td>Date Captured</td><td>{{ item.captured_at }}</td></tr>
+        <tr><td>Detection Confidence</td><td>{{ "%.0f" | format(item.confidence * 100) }}%</td></tr>
+        <tr><td>Evidence Reference</td><td class="integrity-hash">{{ item.id }}</td></tr>
+    </table>
+    {% if item.screenshot_data %}
+    <img class="screenshot-img" src="{{ item.screenshot_data }}" alt="Evidence screenshot">
+    {% endif %}
+    {% if item.detection_reasoning %}
+    <p class="meta"><strong>Classification Reasoning:</strong> {{ item.detection_reasoning }}</p>
+    {% endif %}
+</div>
+{% endfor %}
+
+<div class="section">
+<h2>Appendix: Evidence Integrity Data</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Ref.</th>
+            <th>Operator</th>
+            <th>Article</th>
+            <th>Severity</th>
+            <th>Screenshot SHA-256</th>
+            <th>Captured</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for item in evidence_list %}
+        <tr>
+            <td class="integrity-hash">{{ item.id }}</td>
+            <td>{{ item.competitor_name }}</td>
+            <td class="regulation-ref">{{ item.regulation_violated or "N/A" }}</td>
+            <td class="severity-{{ item.severity }}">{{ item.severity }}</td>
+            <td class="integrity-hash">{{ item.screenshot_hash }}</td>
+            <td>{{ item.captured_at }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}

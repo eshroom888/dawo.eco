@@ -1,0 +1,15 @@
+{
+  "enabled": true,
+  "batch_size": 20,
+  "viewport_width": 1280,
+  "viewport_height": 900,
+  "timeout_seconds": 30,
+  "max_concurrent_captures": 3,
+  "full_page": true,
+  "screenshot_format": "png",
+  "storage_base_path": "evidence/screenshots",
+  "chromium_args": ["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu"],
+  "instagram_embed_template": "https://www.instagram.com/p/{shortcode}/embed/",
+  "timestamp_banner_enabled": true,
+  "wait_until": "networkidle"
+}

@@ -1,0 +1,36 @@
+{
+  "enabled": true,
+  "batch_size": 50,
+  "min_confidence": 70,
+  "auto_violation_categories": ["treatment"],
+  "register_check_categories": ["prevention", "enhancement"],
+  "suspect_categories": ["general_wellness"],
+  "severity_mapping": {
+    "treatment": "high",
+    "prevention": "high",
+    "enhancement": "medium",
+    "general_wellness": "low"
+  },
+  "regulation_mapping": {
+    "treatment": "EC 1924/2006 Art. 10",
+    "prevention": "EC 1924/2006 Art. 14.1a",
+    "enhancement": "EC 1924/2006 Art. 13.1",
+    "general_wellness": "EC 1924/2006 Art. 13.1"
+  },
+  "mushroom_substances": [
+    "reishi",
+    "lion's mane",
+    "chaga",
+    "cordyceps",
+    "turkey tail",
+    "maitake",
+    "shiitake",
+    "hericium erinaceus",
+    "ganoderma lucidum",
+    "inonotus obliquus",
+    "trametes versicolor",
+    "lentinula edodes",
+    "ophiocordyceps sinensis",
+    "grifola frondosa"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "enabled": true,
+  "webhook_url": "${DISCORD_REGULATORY_WEBHOOK_URL}",
+  "batch_window_seconds": 300,
+  "dashboard_url": "https://app.imagoeco.com/dawo/regulatory",
+  "max_retry_attempts": 5,
+  "backoff_schedule": [60, 300, 900, 3600],
+  "dawo_product_keywords": [
+    "lion's mane", "chaga", "reishi", "cordyceps",
+    "shiitake", "maitake", "hericium", "inonotus",
+    "ganoderma", "lentinula", "grifola",
+    "beta-glucan", "adaptogen", "functional mushroom"
+  ],
+  "severity_emoji_map": {
+    "critical": "red_circle",
+    "high": "orange_circle",
+    "medium": "yellow_circle",
+    "low": "white_circle"
+  }
+}

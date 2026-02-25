@@ -1,0 +1,15 @@
+{
+  "token_path": "credentials/calendar_token.json",
+  "credentials_path": "credentials/google-oauth.json",
+  "scopes": ["https://www.googleapis.com/auth/calendar"],
+  "calendar_name": "DAWO Content Schedule",
+  "calendar_id": "${GOOGLE_CALENDAR_ID}",
+  "sync_enabled": true,
+  "dashboard_base_url": "${DASHBOARD_BASE_URL}",
+  "color_ids": {
+    "scheduled": "10",
+    "published": "9",
+    "failed": "11"
+  },
+  "max_title_length": 60
+}

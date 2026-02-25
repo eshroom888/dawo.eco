@@ -1,0 +1,51 @@
+{
+    "monitor": {
+        "schedule_cron": "0 7 * * *",
+        "request_delay_seconds": 5,
+        "max_retries": 3,
+        "timeout_seconds": 30,
+        "user_agent": "DAWO-ECO-RegMonitor/1.0 (regulatory-compliance-monitoring)"
+    },
+    "feeds": [
+        {"name": "Mattilsynet Nyheter", "url": "https://www.mattilsynet.no/nyheter/rss", "is_primary": true},
+        {"name": "Mattilsynet Varsler", "url": "https://www.mattilsynet.no/varsler/rss", "is_primary": true}
+    ],
+    "monitored_pages": [
+        {"name": "Kosttilskudd", "url": "https://www.mattilsynet.no/mat/kosttilskudd"},
+        {"name": "Helsepastander", "url": "https://www.mattilsynet.no/mat/merking-av-mat/helsepastander"},
+        {"name": "Varsler", "url": "https://www.mattilsynet.no/varsler"},
+        {"name": "Import av mat", "url": "https://www.mattilsynet.no/mat/import-av-mat"}
+    ],
+    "keywords_tier_1": [
+        "kosttilskudd",
+        "kosttilskuddsforskriften",
+        "helsepåstander",
+        "helsepåstand",
+        "ernæringspåstand",
+        "EC 1924/2006",
+        "påstandsforordningen",
+        "ny mat",
+        "novel food"
+    ],
+    "keywords_tier_2": [
+        "sopp",
+        "soppekstrakt",
+        "funksjonssopp",
+        "adaptogener",
+        "lions mane",
+        "chaga",
+        "reishi",
+        "cordyceps",
+        "EFSA",
+        "merking",
+        "grenseverdier",
+        "maksimumsgrenser"
+    ],
+    "enforcement_keywords": [
+        "tilbakekalling",
+        "advarsel",
+        "importnekt",
+        "vedtak",
+        "overtredelsesgebyr"
+    ]
+}

@@ -139,6 +139,21 @@ class OperationQueue:
 
         return operations
 
+    async def get_operations_for_service(self, service_name: str) -> list[IncompleteOperation]:
+        """Get pending operations filtered by service name.
+
+        Returns operations whose context starts with the given service_name.
+        More efficient than loading all operations and filtering in the caller.
+
+        Args:
+            service_name: Service to filter by (e.g., "instagram")
+
+        Returns:
+            List of IncompleteOperation instances for this service
+        """
+        all_ops = await self.get_pending_operations()
+        return [op for op in all_ops if op.context.startswith(service_name)]
+
     async def remove_from_queue(self, operation_id: str) -> None:
         """Remove an operation from the queue.
 

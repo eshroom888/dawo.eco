@@ -16,6 +16,17 @@ arq>=0.25.0
 # HTTP Client
 httpx>=0.26.0
 
+# Data Processing (Story 6-1: EU Health Claims Monitor)
+pandas>=2.2.0,<3.0.0
+openpyxl>=3.1.0
+
+# HTML Parsing (Story 5.2)
+beautifulsoup4>=4.12.0
+lxml>=5.0.0
+
+# RSS/Atom Feed Parsing (Story 6-3: Mattilsynet Monitor)
+feedparser>=6.0.0
+
 # Google APIs (Story 3.2)
 google-auth>=2.0.0
 google-auth-oauthlib>=1.0.0
@@ -27,6 +38,14 @@ google-generativeai>=0.8.0
 # Image Processing (Story 3.5)
 Pillow>=10.0.0
 
+# Browser Automation (Story 6-8: Evidence Screenshots)
+# Post-install: playwright install chromium
+playwright>=1.41.0,<2.0.0
+
+# PDF Report Generation (Story 6-10: Violation Reports)
+weasyprint>=62.0,<69.0
+Jinja2>=3.1.0
+
 # Testing
 pytest>=7.4.0
 pytest-asyncio>=0.23.0
@@ -34,3 +53,6 @@ pytest-cov>=4.1.0
 
 # Type checking
 mypy>=1.8.0
+
+# Linting
+ruff>=0.2.0

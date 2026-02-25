@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "B2B Lead Scanner Configuration - Epic 5, Story 5-1",
+
+  "industries": [
+    "health food store",
+    "wellness retailer",
+    "organic shop",
+    "specialty grocery",
+    "supplement store",
+    "natural products retailer",
+    "health store",
+    "apothecary"
+  ],
+
+  "search_keywords": [
+    "helsekost",
+    "naturkost",
+    "kosttilskudd",
+    "organic shop",
+    "wellness store",
+    "health food",
+    "supplement retailer"
+  ],
+
+  "countries": [
+    "Norway",
+    "Sweden",
+    "Denmark",
+    "Finland"
+  ],
+
+  "seed_domains": [
+    "life.no",
+    "sunkost.no",
+    "helsekosten.no",
+    "life.se",
+    "halsokost.se",
+    "helsam.dk",
+    "ruohonjuuri.fi"
+  ],
+
+  "min_confidence": 0.7,
+  "max_leads_per_scan": 50,
+
+  "required_fields": [
+    "email",
+    "company"
+  ],
+
+  "preferred_positions": [
+    "owner",
+    "ceo",
+    "founder",
+    "manager",
+    "director",
+    "buyer",
+    "purchasing",
+    "innkjøp",
+    "daglig leder"
+  ],
+
+  "rate_limit_per_minute": 30,
+
+  "schedule": {
+    "cron": "0 7 * * 1",
+    "timezone": "Europe/Oslo",
+    "description": "Weekly Monday 7 AM Oslo time"
+  },
+
+  "hunter_io": {
+    "$comment": "Hunter.io API credentials loaded from environment variables",
+    "api_key_env": "HUNTER_API_KEY",
+    "base_url": "https://api.hunter.io/v2",
+    "timeout_seconds": 30
+  }
+}

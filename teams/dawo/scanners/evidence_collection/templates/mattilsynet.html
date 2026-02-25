@@ -1,0 +1,78 @@
+{% extends "base_report.html" %}
+
+{% block lang %}no{% endblock %}
+{% block title %}Tilsynsrapport - {{ company_name }}{% endblock %}
+{% block heading %}Tilsynsrapport: Brudd p&aring; helep&aring;standsregler{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .formal-header { margin-bottom: 16pt; }
+    .formal-header p { font-size: 9pt; color: #444; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="formal-header">
+    <p><strong>Til:</strong> Mattilsynet</p>
+    <p><strong>Fra:</strong> {{ company_name }}</p>
+    <p><strong>Dato:</strong> {{ generated_at }}</p>
+    <p><strong>Emne:</strong> Rapport over p&aring;viste brudd p&aring; forordning (EF) nr. 1924/2006 om ern&aelig;rings- og helep&aring;stander</p>
+</div>
+
+<h2>Sammendrag</h2>
+<div class="summary-box">
+    <p>Denne rapporten dokumenterer <strong>{{ evidence_count }}</strong> p&aring;viste brudd p&aring; EU-forordning 1924/2006 om ern&aelig;rings- og helep&aring;stander.</p>
+    <table class="meta-table">
+        <tr><td>Antall brudd</td><td>{{ evidence_count }}</td></tr>
+        <tr><td>H&oslash;y alvorlighetsgrad</td><td>{{ severity_counts.high }}</td></tr>
+        <tr><td>Middels alvorlighetsgrad</td><td>{{ severity_counts.medium }}</td></tr>
+        <tr><td>Lav alvorlighetsgrad</td><td>{{ severity_counts.low }}</td></tr>
+        <tr><td>Antall akt&oslash;rer</td><td>{{ competitor_count }}</td></tr>
+    </table>
+</div>
+
+<h2>Dokumenterte brudd</h2>
+{% for item in evidence_list %}
+<div class="evidence-card">
+    <h3>Brudd {{ loop.index }}: {{ item.competitor_name }}</h3>
+    <table class="meta-table">
+        <tr><td>P&aring;stand</td><td>{{ item.claim_text }}</td></tr>
+        <tr><td>Kategori</td><td>{{ item.claim_category }}</td></tr>
+        <tr><td>Brutt forordning</td><td>{{ item.regulation_violated or "Ikke spesifisert" }}</td></tr>
+        <tr><td>Alvorlighetsgrad</td><td class="severity-{{ item.severity }}">{{ item.severity | upper }}</td></tr>
+        <tr><td>Kilde</td><td>{{ item.source_url }}</td></tr>
+        <tr><td>Fanget dato</td><td>{{ item.captured_at }}</td></tr>
+        <tr><td>Bevis-ID</td><td class="integrity-hash">{{ item.id }}</td></tr>
+    </table>
+    {% if item.screenshot_data %}
+    <img class="screenshot-img" src="{{ item.screenshot_data }}" alt="Bevis skjermbilde for {{ item.competitor_name }}">
+    {% endif %}
+</div>
+{% endfor %}
+
+<div class="section">
+<h2>Vedlegg: R&aring;data</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Bevis-ID</th>
+            <th>Akt&oslash;r</th>
+            <th>Alvorlighetsgrad</th>
+            <th>Skjermbilde-hash (SHA-256)</th>
+            <th>Fanget</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for item in evidence_list %}
+        <tr>
+            <td class="integrity-hash">{{ item.id }}</td>
+            <td>{{ item.competitor_name }}</td>
+            <td class="severity-{{ item.severity }}">{{ item.severity }}</td>
+            <td class="integrity-hash">{{ item.screenshot_hash }}</td>
+            <td>{{ item.captured_at }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}

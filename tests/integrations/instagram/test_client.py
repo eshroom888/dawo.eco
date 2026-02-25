@@ -6,6 +6,7 @@ Tests cover:
 - Successful publishing
 - Error handling for API failures
 - Rate limiting awareness
+- Media insights collection (Story 7-1)
 """
 
 import pytest
@@ -18,6 +19,7 @@ from integrations.instagram.client import (
     PublishResult,
     ContainerStatus,
     InstagramPublishError,
+    MediaInsightsResult,
 )
 
 
@@ -533,3 +535,236 @@ class TestContextManager:
             business_account_id="123",
         ) as client:
             assert isinstance(client, InstagramPublishClient)
+
+
+# === Story 7-1: Media Insights Tests ===
+
+
+class TestMediaInsightsResult:
+    """Tests for MediaInsightsResult dataclass (Task 3.5)."""
+
+    def test_create_with_all_fields(self):
+        """Should create result with all metric fields."""
+        result = MediaInsightsResult(
+            success=True,
+            media_id="17890012345678901",
+            impressions=1000,
+            reach=800,
+            likes=200,
+            comments=50,
+            saved=30,
+            shares=15,
+            total_interactions=295,
+        )
+        assert result.success is True
+        assert result.impressions == 1000
+        assert result.plays is None
+        assert result.avg_watch_time_ms is None
+
+    def test_create_with_reel_metrics(self):
+        """Should support reel-specific metrics (Task 3.2)."""
+        result = MediaInsightsResult(
+            success=True,
+            media_id="17890012345678901",
+            impressions=5000,
+            reach=3000,
+            likes=500,
+            comments=80,
+            saved=60,
+            shares=40,
+            total_interactions=680,
+            plays=10000,
+            avg_watch_time_ms=4500,
+        )
+        assert result.plays == 10000
+        assert result.avg_watch_time_ms == 4500
+
+    def test_failed_result(self):
+        """Should create failed result with error."""
+        result = MediaInsightsResult(
+            success=False,
+            media_id="17890012345678901",
+            error_message="API error",
+        )
+        assert result.success is False
+        assert result.error_message == "API error"
+        assert result.impressions == 0
+
+    def test_result_is_frozen(self):
+        """Result should be immutable."""
+        result = MediaInsightsResult(
+            success=True,
+            media_id="123",
+        )
+        with pytest.raises(AttributeError):
+            result.success = False  # type: ignore
+
+    def test_raw_response_stored(self):
+        """Should store raw API response for debugging."""
+        raw = {"data": [{"name": "impressions", "values": [{"value": 100}]}]}
+        result = MediaInsightsResult(
+            success=True,
+            media_id="123",
+            raw_response=raw,
+        )
+        assert result.raw_response == raw
+
+
+class TestGetMediaInsightsUpdated:
+    """Tests for updated get_media_insights method (Task 3.1, 3.2, 3.5)."""
+
+    @pytest.fixture
+    def client(self):
+        """Create client instance."""
+        return InstagramPublishClient(
+            access_token="test_token",
+            business_account_id="123456",
+        )
+
+    @pytest.mark.asyncio
+    async def test_insights_success_image_post(self, client):
+        """Should return MediaInsightsResult with correct metrics (Task 3.1)."""
+        mock_response = MagicMock()
+        mock_response.json.return_value = {
+            "data": [
+                {"name": "impressions", "values": [{"value": 1000}]},
+                {"name": "reach", "values": [{"value": 800}]},
+                {"name": "likes", "values": [{"value": 200}]},
+                {"name": "comments", "values": [{"value": 50}]},
+                {"name": "saved", "values": [{"value": 30}]},
+                {"name": "shares", "values": [{"value": 15}]},
+                {"name": "total_interactions", "values": [{"value": 295}]},
+            ]
+        }
+
+        with patch.object(client._client, "get", new_callable=AsyncMock) as mock_get:
+            mock_get.return_value = mock_response
+            result = await client.get_media_insights("media_123")
+
+        assert isinstance(result, MediaInsightsResult)
+        assert result.success is True
+        assert result.media_id == "media_123"
+        assert result.impressions == 1000
+        assert result.reach == 800
+        assert result.likes == 200
+        assert result.comments == 50
+        assert result.saved == 30
+        assert result.shares == 15
+        assert result.total_interactions == 295
+        assert result.plays is None
+        assert result.avg_watch_time_ms is None
+
+    @pytest.mark.asyncio
+    async def test_insights_uses_correct_metrics(self, client):
+        """Should request non-deprecated metrics (Task 3.1)."""
+        mock_response = MagicMock()
+        mock_response.json.return_value = {"data": []}
+
+        with patch.object(client._client, "get", new_callable=AsyncMock) as mock_get:
+            mock_get.return_value = mock_response
+            await client.get_media_insights("media_123")
+
+        call_kwargs = mock_get.call_args
+        params = call_kwargs.kwargs.get("params") or call_kwargs[1].get("params", {})
+        metric_str = params.get("metric", "")
+        # Must NOT contain deprecated 'engagement'
+        assert "engagement" not in metric_str
+        # Must contain total_interactions (replacement)
+        assert "total_interactions" in metric_str
+
+    @pytest.mark.asyncio
+    async def test_insights_reel_metrics(self, client):
+        """Should include reel metrics for VIDEO media type (Task 3.2)."""
+        mock_response = MagicMock()
+        mock_response.json.return_value = {
+            "data": [
+                {"name": "impressions", "values": [{"value": 5000}]},
+                {"name": "reach", "values": [{"value": 3000}]},
+                {"name": "likes", "values": [{"value": 500}]},
+                {"name": "comments", "values": [{"value": 80}]},
+                {"name": "saved", "values": [{"value": 60}]},
+                {"name": "shares", "values": [{"value": 40}]},
+                {"name": "total_interactions", "values": [{"value": 680}]},
+                {"name": "ig_reels_aggregated_all_plays_count", "values": [{"value": 10000}]},
+                {"name": "ig_reels_avg_watch_time", "values": [{"value": 4500}]},
+            ]
+        }
+
+        with patch.object(client._client, "get", new_callable=AsyncMock) as mock_get:
+            mock_get.return_value = mock_response
+            result = await client.get_media_insights("media_123", media_type="VIDEO")
+
+        assert result.plays == 10000
+        assert result.avg_watch_time_ms == 4500
+
+    @pytest.mark.asyncio
+    async def test_insights_api_error_returns_failed_result(self, client):
+        """Should return failed MediaInsightsResult on API error."""
+        mock_response = MagicMock()
+        mock_response.json.return_value = {
+            "error": {
+                "message": "Unsupported get request",
+                "code": 100,
+            }
+        }
+
+        with patch.object(client._client, "get", new_callable=AsyncMock) as mock_get:
+            mock_get.return_value = mock_response
+            result = await client.get_media_insights("media_123")
+
+        assert isinstance(result, MediaInsightsResult)
+        assert result.success is False
+        assert "Unsupported get request" in result.error_message
+
+    @pytest.mark.asyncio
+    async def test_insights_timeout_returns_failed_result(self, client):
+        """Should handle timeout gracefully."""
+        with patch.object(client._client, "get", new_callable=AsyncMock) as mock_get:
+            mock_get.side_effect = httpx.TimeoutException("Connection timed out")
+            result = await client.get_media_insights("media_123")
+
+        assert result.success is False
+        assert result.error_message is not None
+
+    @pytest.mark.asyncio
+    async def test_insights_stores_raw_response(self, client):
+        """Should include raw API response in result."""
+        raw_data = {
+            "data": [
+                {"name": "impressions", "values": [{"value": 100}]},
+                {"name": "reach", "values": [{"value": 80}]},
+                {"name": "likes", "values": [{"value": 50}]},
+                {"name": "comments", "values": [{"value": 10}]},
+                {"name": "saved", "values": [{"value": 5}]},
+                {"name": "shares", "values": [{"value": 3}]},
+                {"name": "total_interactions", "values": [{"value": 68}]},
+            ]
+        }
+        mock_response = MagicMock()
+        mock_response.json.return_value = raw_data
+
+        with patch.object(client._client, "get", new_callable=AsyncMock) as mock_get:
+            mock_get.return_value = mock_response
+            result = await client.get_media_insights("media_123")
+
+        assert result.raw_response == raw_data
+
+    @pytest.mark.asyncio
+    async def test_insights_with_rate_limit_tracker(self, client):
+        """Should count calls against rate limit tracker (Task 3.4)."""
+        tracker = MagicMock()
+        client._rate_limit_tracker = tracker
+
+        mock_response = MagicMock()
+        mock_response.json.return_value = {"data": []}
+
+        with patch.object(client._client, "get", new_callable=AsyncMock) as mock_get:
+            mock_get.return_value = mock_response
+            await client.get_media_insights("media_123")
+
+        tracker.check_and_use.assert_called_once_with(1)
+
+    @pytest.mark.asyncio
+    async def test_insights_protocol_has_method(self):
+        """Task 3.3: get_media_insights should be in protocol."""
+        assert hasattr(InstagramPublishClientProtocol, "get_media_insights")

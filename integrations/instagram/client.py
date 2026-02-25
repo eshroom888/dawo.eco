@@ -1,6 +1,6 @@
-"""Instagram Graph API client for content publishing.
+"""Instagram Graph API client for content publishing and insights.
 
-This module provides publishing functionality via the Instagram Graph API.
+This module provides publishing and insights functionality via the Instagram Graph API.
 Uses a two-step container-based approach: create container -> poll status -> publish.
 
 Architecture Compliance:
@@ -21,17 +21,25 @@ Usage:
     if result.success:
         print(f"Published: {result.media_id}")
 
+    # Story 7-1: Collect engagement metrics
+    insights = await client.get_media_insights(result.media_id)
+    if insights.success:
+        print(f"Likes: {insights.likes}, Reach: {insights.reach}")
+
 References:
 - Instagram Graph API Content Publishing:
   https://developers.facebook.com/docs/instagram-api/guides/content-publishing
+- Instagram Graph API Insights:
+  https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights
 - Rate Limits: 25 posts per 24-hour period per account
 """
 
 import asyncio
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from enum import Enum
-from typing import Optional, Protocol, runtime_checkable
+from typing import Any, Optional, Protocol, runtime_checkable
 
 import httpx
 
@@ -46,6 +54,25 @@ class ContainerStatus(Enum):
     FINISHED = "FINISHED"
     IN_PROGRESS = "IN_PROGRESS"
     PUBLISHED = "PUBLISHED"
+
+
+@dataclass(frozen=True)
+class InstagramComment:
+    """A single Instagram comment.
+
+    Story 7-4, Task 3.1: Frozen dataclass for comment data.
+
+    Attributes:
+        comment_id: Instagram comment ID
+        text: Comment text content
+        username: Author username
+        timestamp: When the comment was posted
+    """
+
+    comment_id: str
+    text: str
+    username: str
+    timestamp: datetime
 
 
 @dataclass(frozen=True)
@@ -65,6 +92,57 @@ class PublishResult:
     container_id: Optional[str] = None
     error_message: Optional[str] = None
     error_code: Optional[int] = None
+
+
+@dataclass(frozen=True)
+class MediaInsightsResult:
+    """Result of an Instagram media insights collection.
+
+    Story 7-1, Task 3.5: Structured result instead of raw dict.
+
+    Stores cumulative lifetime values from the Instagram Insights API.
+    Reel-specific fields (plays, avg_watch_time_ms) are None for image posts.
+
+    Attributes:
+        success: Whether the insights collection succeeded
+        media_id: Instagram media ID
+        impressions: Total number of times the post was displayed
+        reach: Number of unique accounts that saw the post
+        likes: Number of likes
+        comments: Number of comments
+        saved: Number of saves
+        shares: Number of shares
+        total_interactions: Sum of all engagement actions
+        plays: Total plays (reels/video only)
+        avg_watch_time_ms: Average watch time in ms (reels/video only)
+        raw_response: Raw API response for debugging
+        error_message: Error description if failed
+    """
+
+    success: bool
+    media_id: str = ""
+    impressions: int = 0
+    reach: int = 0
+    likes: int = 0
+    comments: int = 0
+    saved: int = 0
+    shares: int = 0
+    total_interactions: int = 0
+    plays: Optional[int] = None
+    avg_watch_time_ms: Optional[int] = None
+    raw_response: Optional[dict] = field(default=None, repr=False)
+    error_message: Optional[str] = None
+
+
+# Image post metrics (Graph API v19.0+, replacing deprecated 'engagement')
+IMAGE_METRICS = (
+    "impressions,reach,likes,comments,saved,shares,total_interactions"
+)
+
+# Additional reel/video metrics
+REEL_METRICS = (
+    "ig_reels_aggregated_all_plays_count,ig_reels_avg_watch_time"
+)
 
 
 class InstagramPublishError(Exception):
@@ -137,6 +215,43 @@ class InstagramPublishClientProtocol(Protocol):
         """
         ...
 
+    async def get_media_insights(
+        self,
+        media_id: str,
+        media_type: Optional[str] = None,
+    ) -> MediaInsightsResult:
+        """Get engagement metrics for a published post.
+
+        Story 7-1, Task 3.3: Protocol method for insights collection.
+
+        Args:
+            media_id: Instagram media ID
+            media_type: Media type (IMAGE, VIDEO, CAROUSEL_ALBUM) for
+                        conditional reel metrics
+
+        Returns:
+            MediaInsightsResult with engagement metrics
+        """
+        ...
+
+    async def get_comments(
+        self,
+        media_id: str,
+        limit: int = 100,
+    ) -> list[InstagramComment]:
+        """Get comments for a published post.
+
+        Story 7-4, Task 3.1: Protocol method for comment retrieval.
+
+        Args:
+            media_id: Instagram media ID
+            limit: Maximum comments to retrieve
+
+        Returns:
+            List of InstagramComment objects
+        """
+        ...
+
 
 class InstagramPublishClient:
     """Instagram Graph API client for publishing content.
@@ -169,6 +284,7 @@ class InstagramPublishClient:
         timeout: float = DEFAULT_TIMEOUT,
         max_poll_attempts: int = MAX_POLL_ATTEMPTS,
         poll_interval: float = POLL_INTERVAL,
+        rate_limit_tracker: Any = None,
     ) -> None:
         """Initialize Instagram publish client.
 
@@ -178,6 +294,8 @@ class InstagramPublishClient:
             timeout: Request timeout in seconds
             max_poll_attempts: Max attempts to poll container status
             poll_interval: Seconds between status polls
+            rate_limit_tracker: Optional rate limit tracker (duck-typed,
+                must have check_and_use(count) method). Story 7-1 Task 3.4.
 
         Raises:
             ValueError: If access_token or business_account_id is empty
@@ -193,6 +311,7 @@ class InstagramPublishClient:
         self._max_poll_attempts = max_poll_attempts
         self._poll_interval = poll_interval
         self._client = httpx.AsyncClient()
+        self._rate_limit_tracker = rate_limit_tracker
 
     async def publish_image(
         self,
@@ -449,23 +568,37 @@ class InstagramPublishClient:
     async def get_media_insights(
         self,
         media_id: str,
-    ) -> dict:
-        """Get initial metrics for a published post.
+        media_type: Optional[str] = None,
+    ) -> MediaInsightsResult:
+        """Get engagement metrics for a published post.
 
-        Story 4-5, Task 2.4: Get initial metrics (optional).
+        Story 7-1: Updated to use non-deprecated metrics and return
+        structured MediaInsightsResult instead of raw dict.
+
+        Replaces deprecated 'engagement' metric with 'total_interactions'.
+        Conditionally requests reel-specific metrics for VIDEO media type.
 
         Args:
             media_id: Instagram media ID
+            media_type: Media type (IMAGE, VIDEO, CAROUSEL_ALBUM).
+                        If VIDEO, includes reel-specific metrics.
 
         Returns:
-            Dict with engagement metrics (likes, comments, etc.)
-
-        Raises:
-            InstagramPublishError: If API request fails
+            MediaInsightsResult with engagement metrics
         """
+        # Task 3.4: Count against shared rate limit tracker
+        if self._rate_limit_tracker is not None:
+            self._rate_limit_tracker.check_and_use(1)
+
+        # Task 3.1: Use non-deprecated metric list
+        metrics = IMAGE_METRICS
+        # Task 3.2: Add reel-specific metrics for video content
+        if media_type and media_type.upper() == "VIDEO":
+            metrics = f"{metrics},{REEL_METRICS}"
+
         url = f"{self.GRAPH_API_BASE}/{media_id}/insights"
         params = {
-            "metric": "engagement,impressions,reach,saved",
+            "metric": metrics,
             "access_token": self._access_token,
         }
 
@@ -479,19 +612,113 @@ class InstagramPublishClient:
             data = response.json()
             self._check_error(data)
 
-            # Parse insights into a simpler format
-            insights = {}
+            # Parse insights into a dict for structured result construction
+            parsed: dict[str, int] = {}
             for item in data.get("data", []):
                 name = item.get("name")
                 values = item.get("values", [])
                 if values:
-                    insights[name] = values[0].get("value", 0)
+                    parsed[name] = values[0].get("value", 0)
 
-            return insights
+            return MediaInsightsResult(
+                success=True,
+                media_id=media_id,
+                impressions=parsed.get("impressions", 0),
+                reach=parsed.get("reach", 0),
+                likes=parsed.get("likes", 0),
+                comments=parsed.get("comments", 0),
+                saved=parsed.get("saved", 0),
+                shares=parsed.get("shares", 0),
+                total_interactions=parsed.get("total_interactions", 0),
+                plays=parsed.get("ig_reels_aggregated_all_plays_count"),
+                avg_watch_time_ms=parsed.get("ig_reels_avg_watch_time"),
+                raw_response=data,
+            )
 
+        except InstagramPublishError as e:
+            logger.warning("Failed to get media insights for %s: %s", media_id, e)
+            return MediaInsightsResult(
+                success=False,
+                media_id=media_id,
+                error_message=str(e),
+            )
         except Exception as e:
-            logger.warning(f"Failed to get media insights: {e}")
-            return {}
+            logger.warning("Failed to get media insights for %s: %s", media_id, e)
+            return MediaInsightsResult(
+                success=False,
+                media_id=media_id,
+                error_message=str(e),
+            )
+
+    async def get_comments(
+        self,
+        media_id: str,
+        limit: int = 100,
+    ) -> list[InstagramComment]:
+        """Get comments for a published post.
+
+        Story 7-4, Task 3.1: Fetch comments with cursor-based pagination.
+        Shares the 200 req/hour rate limit budget with metrics collection.
+
+        Args:
+            media_id: Instagram media ID
+            limit: Maximum comments to retrieve (default 100)
+
+        Returns:
+            List of InstagramComment objects, up to limit
+        """
+        if self._rate_limit_tracker is not None:
+            self._rate_limit_tracker.check_and_use(1)
+
+        comments: list[InstagramComment] = []
+        url = f"{self.GRAPH_API_BASE}/{media_id}/comments"
+        params: dict[str, Any] = {
+            "fields": "id,text,timestamp,username",
+            "limit": min(limit, 100),
+            "access_token": self._access_token,
+        }
+
+        try:
+            while len(comments) < limit:
+                response = await self._client.get(
+                    url,
+                    params=params,
+                    timeout=self._timeout,
+                )
+                data = response.json()
+                self._check_error(data)
+
+                for item in data.get("data", []):
+                    if len(comments) >= limit:
+                        break
+                    comments.append(
+                        InstagramComment(
+                            comment_id=item["id"],
+                            text=item.get("text", ""),
+                            username=item.get("username", ""),
+                            timestamp=datetime.fromisoformat(
+                                item["timestamp"].replace("Z", "+00:00")
+                            )
+                            if "timestamp" in item
+                            else datetime.now(UTC),
+                        )
+                    )
+
+                # Cursor-based pagination
+                paging = data.get("paging", {})
+                cursors = paging.get("cursors", {})
+                after = cursors.get("after")
+                if not after or not paging.get("next"):
+                    break
+
+                params["after"] = after
+
+        except InstagramPublishError as e:
+            logger.warning("Failed to get comments for %s: %s", media_id, e)
+        except Exception as e:
+            logger.warning("Failed to get comments for %s: %s", media_id, e)
+
+        return comments
 
     def _check_error(self, data: dict) -> None:
         """Check API response for errors.

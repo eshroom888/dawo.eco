@@ -101,6 +101,22 @@ def build_utm_url(
     )
 
 
+def build_short_link_url(base_url: str, code: str) -> str:
+    """Build a short link URL from base URL and code.
+
+    Story 7-2, Task 6.1: Helper for constructing short link redirect URLs.
+
+    Args:
+        base_url: Base URL of the short link service (e.g., "https://dawo.no")
+        code: Short link code
+
+    Returns:
+        Full short link URL (e.g., "https://dawo.no/l/abc123")
+    """
+    base = base_url.rstrip("/")
+    return f"{base}/l/{code}"
+
+
 def get_product_url_with_utm(
     product_url: str,
     content_type: str,
@@ -123,3 +139,11 @@ def get_product_url_with_utm(
         source="instagram",
         medium="post",
     )
+
+
+__all__ = [
+    "UTMParams",
+    "build_short_link_url",
+    "build_utm_url",
+    "get_product_url_with_utm",
+]

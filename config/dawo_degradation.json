@@ -1,0 +1,14 @@
+{
+  "failure_threshold": 3,
+  "unhealthy_threshold": 10,
+  "recovery_check_interval_seconds": 300,
+  "max_recovery_batch_size": 20,
+  "alert_cooldown_seconds": 300,
+  "stale_cache_ttl_hours": 24,
+  "monitored_services": [
+    "instagram",
+    "shopify",
+    "discord",
+    "google_calendar"
+  ]
+}

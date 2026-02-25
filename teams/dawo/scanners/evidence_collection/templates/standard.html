@@ -1,0 +1,107 @@
+{% extends "base_report.html" %}
+
+{% block title %}Violation Report - {{ company_name }}{% endblock %}
+
+{% block content %}
+<h2>Executive Summary</h2>
+<div class="summary-box">
+    <div class="summary-grid">
+        <div class="summary-stat">
+            <div class="value">{{ evidence_count }}</div>
+            <div class="label">Total Violations</div>
+        </div>
+        <div class="summary-stat">
+            <div class="value severity-high">{{ severity_counts.high }}</div>
+            <div class="label">High Severity</div>
+        </div>
+        <div class="summary-stat">
+            <div class="value severity-medium">{{ severity_counts.medium }}</div>
+            <div class="label">Medium Severity</div>
+        </div>
+    </div>
+    <div class="summary-grid" style="margin-top: 8pt;">
+        <div class="summary-stat">
+            <div class="value severity-low">{{ severity_counts.low }}</div>
+            <div class="label">Low Severity</div>
+        </div>
+        <div class="summary-stat">
+            <div class="value">{{ competitor_count }}</div>
+            <div class="label">Competitors</div>
+        </div>
+        <div class="summary-stat">
+            <div class="value">{{ date_range_display }}</div>
+            <div class="label">Date Range</div>
+        </div>
+    </div>
+</div>
+
+<h2>Evidence Details</h2>
+{% for item in evidence_list %}
+<div class="evidence-card">
+    <div class="header">
+        <h3>{{ item.competitor_name }} &mdash; {{ item.violation_type }}</h3>
+        <span class="severity-{{ item.severity }}">{{ item.severity | upper }}</span>
+    </div>
+    <table class="meta-table">
+        <tr><td>Claim</td><td>{{ item.claim_text }}</td></tr>
+        <tr><td>Category</td><td>{{ item.claim_category }}</td></tr>
+        <tr><td>Regulation</td><td>{{ item.regulation_violated or "N/A" }}</td></tr>
+        <tr><td>Source</td><td>{{ item.source_url }}</td></tr>
+        <tr><td>Captured</td><td>{{ item.captured_at }}</td></tr>
+        <tr><td>Confidence</td><td>{{ "%.0f" | format(item.confidence * 100) }}%</td></tr>
+        <tr><td>Evidence ID</td><td class="integrity-hash">{{ item.id }}</td></tr>
+    </table>
+    {% if item.screenshot_data %}
+    <img class="screenshot-img" src="{{ item.screenshot_data }}" alt="Evidence screenshot for {{ item.competitor_name }}">
+    {% endif %}
+    {% if item.detection_reasoning %}
+    <p class="meta"><strong>Reasoning:</strong> {{ item.detection_reasoning }}</p>
+    {% endif %}
+</div>
+{% endfor %}
+
+{% if competitor_timeline %}
+<div class="section">
+<h2>Competitor Timeline</h2>
+{% for competitor, months in competitor_timeline.items() %}
+<div class="no-break">
+    <h3>{{ competitor }}</h3>
+    <table>
+        <thead><tr><th>Month</th><th>Violations</th></tr></thead>
+        <tbody>
+        {% for month, count in months.items() %}
+        <tr><td>{{ month }}</td><td>{{ count }}</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endfor %}
+</div>
+{% endif %}
+
+<div class="section">
+<h2>Appendix: Raw Evidence Data</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Evidence ID</th>
+            <th>Competitor</th>
+            <th>Severity</th>
+            <th>Screenshot Hash</th>
+            <th>Captured</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for item in evidence_list %}
+        <tr>
+            <td class="integrity-hash">{{ item.id }}</td>
+            <td>{{ item.competitor_name }}</td>
+            <td class="severity-{{ item.severity }}">{{ item.severity }}</td>
+            <td class="integrity-hash">{{ item.screenshot_hash }}</td>
+            <td>{{ item.captured_at }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}

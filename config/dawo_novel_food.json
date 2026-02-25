@@ -1,0 +1,50 @@
+{
+    "monitor": {
+        "schedule_cron": "30 5 * * 0",
+        "search_url": "https://ec.europa.eu/food/food-feed-portal/backend/novel-food-catalogue/search",
+        "portal_url": "https://ec.europa.eu/food/food-feed-portal/screen/novel-food-catalogue/search",
+        "request_delay_seconds": 10,
+        "max_retries": 3,
+        "timeout_seconds": 30,
+        "user_agent": "DAWO-ECO-RegulatoryMonitor/1.0"
+    },
+    "species": [
+        {
+            "latin_name": "Hericium erinaceus",
+            "common_names": ["Lion's Mane", "Yamabushitake"],
+            "is_dawo_product": true
+        },
+        {
+            "latin_name": "Inonotus obliquus",
+            "common_names": ["Chaga"],
+            "is_dawo_product": true
+        },
+        {
+            "latin_name": "Ganoderma lucidum",
+            "common_names": ["Reishi", "Lingzhi"],
+            "is_dawo_product": true
+        },
+        {
+            "latin_name": "Cordyceps militaris",
+            "common_names": ["Cordyceps"],
+            "is_dawo_product": true
+        },
+        {
+            "latin_name": "Lentinula edodes",
+            "common_names": ["Shiitake"],
+            "is_dawo_product": true
+        },
+        {
+            "latin_name": "Grifola frondosa",
+            "common_names": ["Maitake", "Hen of the Woods"],
+            "is_dawo_product": true
+        }
+    ],
+    "alert_on_status_change": [
+        "novel_to_not_novel",
+        "not_novel_to_novel",
+        "not_determined_to_novel",
+        "authorised_to_not_authorised",
+        "not_authorised_to_authorised"
+    ]
+}

@@ -169,6 +169,181 @@ from teams.dawo.generators.auto_publish_tagger.statistics import AutoPublishStat
 from teams.dawo.generators.asset_usage.agent import AssetUsageTracker
 from teams.dawo.generators.asset_usage.repository import AssetUsageRepository
 
+# B2B Lead Scanner (Story 5.1)
+from teams.dawo.leads import (
+    B2BLeadScanner,
+    LeadHarvester,
+    LeadTransformer,
+    LeadDuplicateChecker,
+    B2BLeadPipeline,
+    HunterClient,
+    LeadRepository,
+)
+
+# Lead Enrichment (Story 5.2)
+from teams.dawo.leads.enrichment import (
+    LeadEnrichmentAgent,
+    LeadEnrichmentService,
+    EnrichmentPipeline,
+    WebsiteAnalyzer,
+    BusinessAnalyzer,
+    HunterEnricher,
+    SocialAnalyzer,
+    EnrichmentScorer,
+)
+
+# Outreach Draft Generator (Story 5.3)
+from teams.dawo.leads.outreach import (
+    OutreachDraftAgent,
+    OutreachService,
+    OutreachPipeline,
+    OutreachDraftGenerator,
+    PersonalizationEngine,
+    LeadTypeClassifier,
+    OutreachValidator,
+    OutreachApprovalIntegration,
+    OutreachTemplateRegistry,
+)
+
+# Pipeline Service (Story 5.5)
+from teams.dawo.leads.pipeline import PipelineService, CSVExporter
+
+# Gmail Sender (Story 5.4)
+from teams.dawo.leads.gmail import (
+    GmailSendService,
+    GmailRateLimitConfig,
+    GmailConfig,
+)
+from teams.dawo.leads.gmail.agent import GmailSenderAgent
+from teams.dawo.leads.gmail.client import GmailClient
+from teams.dawo.leads.gmail.credentials_manager import GmailCredentialsManager
+from teams.dawo.leads.gmail.pipeline import GmailSendPipeline
+from teams.dawo.leads.gmail.gdpr_validator import GDPRPreSendValidator
+from teams.dawo.leads.gmail.utm import UTMInjector
+from teams.dawo.leads.gmail.signature import SignatureBuilder
+from teams.dawo.leads.gmail.rate_limiter import GmailRateLimiter
+
+# Health Claims Monitor (Story 6.1)
+from teams.dawo.scanners.health_claims import (
+    HealthClaimsClient,
+    HealthClaimsMonitorPipeline,
+    HealthClaimsRepository,
+    RegisterParser,
+    RelevanceFilter,
+    ChangeDetector,
+)
+
+# Novel Food Catalogue Monitor (Story 6.2)
+from teams.dawo.scanners.novel_food.client import NovelFoodCatalogueClient
+from teams.dawo.scanners.novel_food.parser import CatalogueParser
+from teams.dawo.scanners.novel_food.change_detector import NovelFoodChangeDetector
+from teams.dawo.scanners.novel_food.repository import NovelFoodRepository
+from teams.dawo.scanners.novel_food.pipeline import NovelFoodMonitorPipeline
+from teams.dawo.scanners.mattilsynet.client import MattilsynetClient
+from teams.dawo.scanners.mattilsynet.feed_parser import MattilsynetFeedParser
+from teams.dawo.scanners.mattilsynet.page_parser import MattilsynetPageParser
+from teams.dawo.scanners.mattilsynet.keyword_matcher import NorwegianKeywordMatcher
+from teams.dawo.scanners.mattilsynet.change_detector import PageChangeDetector
+from teams.dawo.scanners.mattilsynet.repository import MattilsynetRepository
+from teams.dawo.scanners.mattilsynet.pipeline import MattilsynetMonitorPipeline
+
+# Claims Alerts (Story 6.4)
+from teams.dawo.scanners.claims_alerts import (
+    ClaimsAlertConfig,
+    ClaimsAlertFormatter,
+    ClaimsAlertBatcher,
+    DAWORelevanceFilter,
+    ClaimsAlertService,
+    RegulatoryAlertSubscriber,
+)
+
+# Health Claim Extraction Engine (Story 6.6)
+from teams.dawo.scanners.claim_extraction import (
+    HealthClaimExtractionEngine,
+    ClaimPatternMatcher,
+    ClaimLLMClassifier,
+    HealthClaimRepository,
+)
+
+# Competitor Content Scanner (Story 6.5)
+from teams.dawo.scanners.competitor import (
+    CompetitorScanPipeline,
+    WebsiteScraperClient,
+    CompetitorContentParser,
+    CompetitorDuplicateChecker,
+    CompetitorRepository,
+)
+
+# Violation Detection (Story 6.7)
+from teams.dawo.scanners.violation_detection import (
+    ViolationDetector,
+    ViolationClassifier,
+    ViolationRepository,
+)
+
+# Instagram Analytics (Story 7.1)
+from core.analytics import (
+    InstagramMetricsCollector,
+    InstagramMetricsRepository,
+    MetricsQueryService,
+)
+
+# UTM Click-Through Tracking (Story 7.2)
+from core.analytics import (
+    ClickAnalyticsService,
+    ShortLinkService,
+    UTMRepository,
+)
+
+# Shopify Sales Attribution (Story 7.3)
+from core.analytics.attribution_repository import AttributionRepository
+from core.analytics.attribution_service import AttributionService
+from core.analytics.revenue_analytics import RevenueAnalyticsService
+
+# Post-Publish Quality Scoring (Story 7.4)
+from core.analytics.comment_sentiment import CommentSentimentScorer
+from core.analytics.quality_scoring_repository import QualityScoringRepository
+from core.analytics.quality_scoring_service import PostPublishScoringService
+from core.analytics.quality_scoring_analyzer import VarianceAnalyzer
+
+# Performance Feedback Loop (Story 7.5)
+from core.analytics.feedback_loop_repository import FeedbackLoopRepository
+from core.analytics.content_performance_analyzer import ContentPerformanceAnalyzer
+from core.analytics.weight_adjuster import WeightAdjuster
+from core.analytics.feedback_loop_service import FeedbackLoopService
+
+# Agent Schedule Configuration (Story 7.6)
+from core.scheduling.schedule_repository import AgentScheduleRepository
+from core.scheduling.schedule_service import AgentScheduleService
+
+# Manual Trigger Service (Story 7.7)
+from core.scheduling.manual_trigger_service import ManualTriggerService
+
+# Execution Dashboard (Story 7.8)
+from core.scheduling.execution_log_repository import ExecutionLogRepository
+from core.scheduling.execution_log_service import ExecutionLogService
+
+# Calendar Sync (Story 7.9)
+from integrations.google_calendar.sync_service import CalendarSyncService
+
+# Evidence Collection (Story 6.8, 6.10)
+from teams.dawo.scanners.evidence_collection import (
+    EvidenceCollector,
+    EvidenceDownloadService,
+    EvidenceRepository,
+    EvidenceStorageService,
+    PlaywrightScreenshotService,
+    ReportStorageService,
+    WeasyPrintPDFGenerator,
+)
+
+# Graceful Degradation (Story 7.10)
+from core.degradation import (
+    DegradationAlertService,
+    RecoveryProcessor,
+    ServiceHealthRegistry,
+)
+
 # Tier values - use these string constants for type safety
 # These map to TaskType enum values in teams.dawo.config.llm_tiers
 TIER_SCAN = "scan"          # → Haiku (high-volume, fast)
@@ -303,6 +478,55 @@ AGENTS: List[RegisteredAgent] = [
         agent_class=AssetUsageTracker,
         capabilities=["asset_tracking", "usage_analytics", "performance_metrics"],
         tier=TIER_GENERATE,  # Uses generate tier for future LLM enhancements
+    ),
+    # B2B Lead Scanner (Story 5.1)
+    RegisteredAgent(
+        name="b2b_lead_scanner",
+        agent_class=B2BLeadScanner,
+        capabilities=["b2b_lead_research", "lead_discovery", "b2b_sales"],
+        tier=TIER_SCAN,  # Uses scan tier for high-volume lead discovery
+    ),
+    # Lead Enrichment Agent (Story 5.2)
+    RegisteredAgent(
+        name="lead_enrichment_agent",
+        agent_class=LeadEnrichmentAgent,
+        capabilities=["lead_enrichment", "business_analysis", "b2b_sales"],
+        tier=TIER_GENERATE,  # Uses generate tier (Sonnet) for LLM analysis
+    ),
+    # Outreach Draft Agent (Story 5.3)
+    RegisteredAgent(
+        name="outreach_draft_agent",
+        agent_class=OutreachDraftAgent,
+        capabilities=["lead_outreach", "email_generation", "b2b_sales"],
+        tier=TIER_GENERATE,  # Uses generate tier (Sonnet) for LLM draft generation
+    ),
+    # Gmail Sender Agent (Story 5.4)
+    RegisteredAgent(
+        name="gmail_sender_agent",
+        agent_class=GmailSenderAgent,
+        capabilities=["email_send", "gmail_integration"],
+        tier=TIER_SCAN,  # Lightweight orchestration, no LLM needed
+    ),
+    # Health Claim Extraction Engine (Story 6.6)
+    RegisteredAgent(
+        name="health_claim_extraction_engine",
+        agent_class=HealthClaimExtractionEngine,
+        capabilities=["competitor_monitoring", "claim_extraction"],
+        tier=TIER_GENERATE,  # Orchestrates LLM classification pipeline
+    ),
+    # Violation Detector (Story 6.7)
+    RegisteredAgent(
+        name="violation_detector",
+        agent_class=ViolationDetector,
+        capabilities=["competitor_monitoring", "violation_detection"],
+        tier=TIER_GENERATE,  # Orchestrates classification + register cross-reference
+    ),
+    # Evidence Collector (Story 6.8)
+    RegisteredAgent(
+        name="evidence_collector",
+        agent_class=EvidenceCollector,
+        capabilities=["competitor_monitoring", "evidence_collection", "screenshot_capture"],
+        tier=TIER_SCAN,  # No LLM needed — capture + store
     ),
 ]
 
@@ -553,5 +777,606 @@ SERVICES: list[RegisteredService] = [
         service_class=AssetUsageRepository,
         capabilities=["asset_tracking", "usage_storage"],
         requires_session=False,  # In-memory storage, future database persistence via Protocol
+    ),
+    # B2B Lead Scanner Services (Story 5.1)
+    RegisteredService(
+        name="hunter_client",
+        service_class=HunterClient,
+        capabilities=["b2b_lead_research", "hunter_io"],
+        requires_session=False,  # Receives HunterClientConfig via injection
+    ),
+    RegisteredService(
+        name="lead_harvester",
+        service_class=LeadHarvester,
+        capabilities=["b2b_lead_research", "lead_enrichment"],
+        requires_session=False,  # Receives HunterClient via injection
+    ),
+    RegisteredService(
+        name="lead_transformer",
+        service_class=LeadTransformer,
+        capabilities=["b2b_lead_research"],
+        requires_session=False,  # Receives LeadScannerConfig via injection
+    ),
+    RegisteredService(
+        name="lead_duplicate_checker",
+        service_class=LeadDuplicateChecker,
+        capabilities=["b2b_lead_research", "duplicate_detection"],
+        requires_session=False,  # Receives LeadRepository via injection
+    ),
+    RegisteredService(
+        name="b2b_lead_pipeline",
+        service_class=B2BLeadPipeline,
+        capabilities=["b2b_lead_research", "lead_pipeline"],
+        requires_session=False,  # Receives all stage components via injection
+    ),
+    RegisteredService(
+        name="lead_repository",
+        service_class=LeadRepository,
+        capabilities=["lead_storage", "b2b_lead_research"],
+        requires_session=True,  # Requires AsyncSession injection
+    ),
+    # Lead Enrichment Services (Story 5.2)
+    RegisteredService(
+        name="website_analyzer",
+        service_class=WebsiteAnalyzer,
+        capabilities=["lead_enrichment", "website_analysis"],
+        requires_session=False,  # Receives httpx.AsyncClient via injection
+    ),
+    RegisteredService(
+        name="business_analyzer",
+        service_class=BusinessAnalyzer,
+        capabilities=["lead_enrichment", "business_analysis"],
+        requires_session=False,  # Receives LLMClient via injection
+    ),
+    RegisteredService(
+        name="hunter_enricher",
+        service_class=HunterEnricher,
+        capabilities=["lead_enrichment", "hunter_io"],
+        requires_session=False,  # Receives HunterClient via injection
+    ),
+    RegisteredService(
+        name="social_analyzer",
+        service_class=SocialAnalyzer,
+        capabilities=["lead_enrichment", "social_media_analysis"],
+        requires_session=False,  # No external dependencies
+    ),
+    RegisteredService(
+        name="enrichment_scorer",
+        service_class=EnrichmentScorer,
+        capabilities=["lead_enrichment", "lead_scoring"],
+        requires_session=False,  # Receives EnrichmentConfig via injection
+    ),
+    RegisteredService(
+        name="lead_enrichment_service",
+        service_class=LeadEnrichmentService,
+        capabilities=["lead_enrichment"],
+        requires_session=False,  # Receives all analyzers via injection
+    ),
+    RegisteredService(
+        name="enrichment_pipeline",
+        service_class=EnrichmentPipeline,
+        capabilities=["lead_enrichment", "lead_pipeline"],
+        requires_session=False,  # Receives LeadRepository and LeadEnrichmentService via injection
+    ),
+    # Outreach Draft Generator Services (Story 5.3)
+    RegisteredService(
+        name="outreach_template_registry",
+        service_class=OutreachTemplateRegistry,
+        capabilities=["lead_outreach", "template_management"],
+        requires_session=False,  # No external dependencies, manages templates in-memory
+    ),
+    RegisteredService(
+        name="outreach_service",
+        service_class=OutreachService,
+        capabilities=["lead_outreach", "email_generation"],
+        requires_session=False,  # Receives all outreach components via injection
+    ),
+    RegisteredService(
+        name="outreach_draft_generator",
+        service_class=OutreachDraftGenerator,
+        capabilities=["lead_outreach", "draft_generation"],
+        requires_session=False,  # Receives LLM, PersonalizationEngine, TemplateRegistry via injection
+    ),
+    RegisteredService(
+        name="personalization_engine",
+        service_class=PersonalizationEngine,
+        capabilities=["lead_outreach", "personalization"],
+        requires_session=False,  # Receives config via injection
+    ),
+    RegisteredService(
+        name="lead_type_classifier",
+        service_class=LeadTypeClassifier,
+        capabilities=["lead_outreach", "lead_classification"],
+        requires_session=False,  # Receives LLMClient via injection
+    ),
+    RegisteredService(
+        name="outreach_validator",
+        service_class=OutreachValidator,
+        capabilities=["lead_outreach", "brand_voice_validation"],
+        requires_session=False,  # Receives BrandVoiceValidator via injection
+    ),
+    RegisteredService(
+        name="outreach_pipeline",
+        service_class=OutreachPipeline,
+        capabilities=["lead_outreach", "lead_pipeline"],
+        requires_session=False,  # Receives LeadRepository and OutreachService via injection
+    ),
+    RegisteredService(
+        name="outreach_approval_integration",
+        service_class=OutreachApprovalIntegration,
+        capabilities=["lead_outreach", "approval_queue"],
+        requires_session=False,  # No external dependencies
+    ),
+    # Gmail Sender Services (Story 5.4)
+    RegisteredService(
+        name="gmail_client",
+        service_class=GmailClient,
+        capabilities=["gmail_integration", "email_send"],
+        requires_session=False,  # Receives GmailCredentialsManager via injection
+    ),
+    RegisteredService(
+        name="gmail_credentials_manager",
+        service_class=GmailCredentialsManager,
+        capabilities=["gmail_integration", "credential_management"],
+        requires_session=False,  # Receives GmailConfig via injection
+    ),
+    RegisteredService(
+        name="gmail_send_service",
+        service_class=GmailSendService,
+        capabilities=["email_send", "gmail_integration"],
+        requires_session=False,  # Receives all Gmail components via injection
+    ),
+    RegisteredService(
+        name="gmail_send_pipeline",
+        service_class=GmailSendPipeline,
+        capabilities=["email_send", "lead_pipeline"],
+        requires_session=False,  # Receives LeadRepository and GmailSendService via injection
+    ),
+    RegisteredService(
+        name="gdpr_pre_send_validator",
+        service_class=GDPRPreSendValidator,
+        capabilities=["gdpr_validation", "email_send"],
+        requires_session=False,  # No external dependencies
+    ),
+    RegisteredService(
+        name="utm_injector",
+        service_class=UTMInjector,
+        capabilities=["utm_tracking", "email_send"],
+        requires_session=False,  # No external dependencies
+    ),
+    RegisteredService(
+        name="signature_builder",
+        service_class=SignatureBuilder,
+        capabilities=["email_signature", "email_send"],
+        requires_session=False,  # Receives GmailConfig via injection
+    ),
+    RegisteredService(
+        name="gmail_rate_limiter",
+        service_class=GmailRateLimiter,
+        capabilities=["rate_limiting", "email_send"],
+        requires_session=False,  # Receives GmailRateLimitConfig via injection
+    ),
+    # Pipeline Service (Story 5.5)
+    RegisteredService(
+        name="pipeline_service",
+        service_class=PipelineService,
+        capabilities=["pipeline_dashboard", "lead_status_tracking"],
+        requires_session=False,  # Receives LeadRepository via injection
+    ),
+    RegisteredService(
+        name="csv_exporter",
+        service_class=CSVExporter,
+        capabilities=["pipeline_export", "csv_generation"],
+        requires_session=False,  # Receives LeadRepository via injection
+    ),
+    # Health Claims Monitor Services (Story 6.1)
+    RegisteredService(
+        name="health_claims_monitor",
+        service_class=HealthClaimsMonitorPipeline,
+        capabilities=["regulatory_monitoring", "health_claims"],
+        requires_session=True,  # Pipeline uses repository which requires session
+    ),
+    RegisteredService(
+        name="health_claims_client",
+        service_class=HealthClaimsClient,
+        capabilities=["eu_data_access"],
+        requires_session=False,  # Receives httpx.AsyncClient and RetryMiddleware via injection
+    ),
+    RegisteredService(
+        name="health_claims_repository",
+        service_class=HealthClaimsRepository,
+        capabilities=["regulatory_storage"],
+        requires_session=True,  # Requires AsyncSession injection
+    ),
+    RegisteredService(
+        name="register_parser",
+        service_class=RegisterParser,
+        capabilities=["regulatory_monitoring", "data_parsing"],
+        requires_session=False,  # Stateless parser
+    ),
+    RegisteredService(
+        name="relevance_filter",
+        service_class=RelevanceFilter,
+        capabilities=["regulatory_monitoring", "relevance_filtering"],
+        requires_session=False,  # Receives keyword config via injection
+    ),
+    RegisteredService(
+        name="change_detector",
+        service_class=ChangeDetector,
+        capabilities=["regulatory_monitoring", "change_detection"],
+        requires_session=False,  # Receives keyword config via injection
+    ),
+    # Novel Food Catalogue Monitor Services (Story 6.2)
+    RegisteredService(
+        name="novel_food_monitor",
+        service_class=NovelFoodMonitorPipeline,
+        capabilities=["regulatory_monitoring", "novel_food"],
+        requires_session=True,  # Pipeline uses repository which requires session
+    ),
+    RegisteredService(
+        name="novel_food_client",
+        service_class=NovelFoodCatalogueClient,
+        capabilities=["eu_data_access", "novel_food"],
+        requires_session=False,  # Receives httpx.AsyncClient and RetryMiddleware via injection
+    ),
+    RegisteredService(
+        name="novel_food_repository",
+        service_class=NovelFoodRepository,
+        capabilities=["regulatory_storage", "novel_food"],
+        requires_session=True,  # Requires AsyncSession injection
+    ),
+    RegisteredService(
+        name="catalogue_parser",
+        service_class=CatalogueParser,
+        capabilities=["regulatory_monitoring", "data_parsing", "novel_food"],
+        requires_session=False,  # Stateless parser
+    ),
+    RegisteredService(
+        name="novel_food_change_detector",
+        service_class=NovelFoodChangeDetector,
+        capabilities=["regulatory_monitoring", "change_detection", "novel_food"],
+        requires_session=False,  # Receives species config via injection
+    ),
+    # Mattilsynet Regulatory Monitor Services (Story 6.3)
+    RegisteredService(
+        name="mattilsynet_monitor",
+        service_class=MattilsynetMonitorPipeline,
+        capabilities=["regulatory_monitoring", "mattilsynet"],
+        requires_session=True,  # Pipeline uses repository which requires session
+    ),
+    RegisteredService(
+        name="mattilsynet_client",
+        service_class=MattilsynetClient,
+        capabilities=["norwegian_data_access"],
+        requires_session=False,  # Receives httpx.AsyncClient and RetryMiddleware via injection
+    ),
+    RegisteredService(
+        name="mattilsynet_repository",
+        service_class=MattilsynetRepository,
+        capabilities=["regulatory_storage"],
+        requires_session=True,  # Requires AsyncSession injection
+    ),
+    RegisteredService(
+        name="mattilsynet_feed_parser",
+        service_class=MattilsynetFeedParser,
+        capabilities=["regulatory_monitoring", "data_parsing"],
+        requires_session=False,  # Stateless parser
+    ),
+    RegisteredService(
+        name="mattilsynet_page_parser",
+        service_class=MattilsynetPageParser,
+        capabilities=["regulatory_monitoring", "data_parsing"],
+        requires_session=False,  # Stateless parser
+    ),
+    RegisteredService(
+        name="norwegian_keyword_matcher",
+        service_class=NorwegianKeywordMatcher,
+        capabilities=["text_analysis"],
+        requires_session=False,  # Receives keyword config via injection
+    ),
+    RegisteredService(
+        name="page_change_detector",
+        service_class=PageChangeDetector,
+        capabilities=["change_detection"],
+        requires_session=False,  # Stateless detector
+    ),
+    # Claims Alert Services (Story 6.4)
+    RegisteredService(
+        name="claims_alert_service",
+        service_class=ClaimsAlertService,
+        capabilities=["regulatory_alerting", "claims_alerts", "discord_notifications"],
+        requires_session=False,  # No database — event processing only
+    ),
+    RegisteredService(
+        name="claims_alert_formatter",
+        service_class=ClaimsAlertFormatter,
+        capabilities=["regulatory_alerting", "notification_formatting"],
+        requires_session=False,
+    ),
+    RegisteredService(
+        name="dawo_relevance_filter",
+        service_class=DAWORelevanceFilter,
+        capabilities=["regulatory_alerting", "relevance_filtering"],
+        requires_session=False,
+    ),
+    RegisteredService(
+        name="claims_alert_batcher",
+        service_class=ClaimsAlertBatcher,
+        capabilities=["regulatory_alerting", "notification_batching"],
+        requires_session=False,
+    ),
+    RegisteredService(
+        name="regulatory_alert_subscriber",
+        service_class=RegulatoryAlertSubscriber,
+        capabilities=["regulatory_alerting", "event_subscription"],
+        requires_session=False,
+    ),
+    # Competitor Content Scanner Services (Story 6.5)
+    RegisteredService(
+        name="competitor_scan_pipeline",
+        service_class=CompetitorScanPipeline,
+        capabilities=["competitor_monitoring", "content_scanning"],
+        requires_session=True,  # Pipeline uses repository which requires session
+    ),
+    RegisteredService(
+        name="website_scraper_client",
+        service_class=WebsiteScraperClient,
+        capabilities=["competitor_monitoring", "web_scraping"],
+        requires_session=False,  # Receives httpx.AsyncClient and RetryMiddleware via injection
+    ),
+    RegisteredService(
+        name="competitor_content_parser",
+        service_class=CompetitorContentParser,
+        capabilities=["competitor_monitoring", "content_parsing"],
+        requires_session=False,  # Receives health_language_keywords via injection
+    ),
+    RegisteredService(
+        name="competitor_duplicate_checker",
+        service_class=CompetitorDuplicateChecker,
+        capabilities=["competitor_monitoring", "deduplication"],
+        requires_session=True,  # Requires AsyncSession injection
+    ),
+    RegisteredService(
+        name="competitor_repository",
+        service_class=CompetitorRepository,
+        capabilities=["competitor_monitoring", "competitor_storage"],
+        requires_session=True,  # Requires AsyncSession injection
+    ),
+    # Health Claim Extraction Services (Story 6.6)
+    RegisteredService(
+        name="claim_pattern_matcher",
+        service_class=ClaimPatternMatcher,
+        capabilities=["health_claim_extraction", "pattern_matching"],
+        requires_session=False,  # Receives config via injection
+    ),
+    RegisteredService(
+        name="claim_llm_classifier",
+        service_class=ClaimLLMClassifier,
+        capabilities=["health_claim_extraction", "llm_classification"],
+        requires_session=False,  # Receives LLMClient and RetryMiddleware via injection
+    ),
+    RegisteredService(
+        name="health_claim_repository",
+        service_class=HealthClaimRepository,
+        capabilities=["health_claim_extraction", "claim_storage"],
+        requires_session=True,  # Requires AsyncSession injection
+    ),
+    # Violation Detection Services (Story 6.7)
+    RegisteredService(
+        name="violation_classifier",
+        service_class=ViolationClassifier,
+        capabilities=["competitor_monitoring", "violation_classification"],
+        requires_session=False,  # Receives ViolationDetectionConfig via injection
+    ),
+    RegisteredService(
+        name="violation_repository",
+        service_class=ViolationRepository,
+        capabilities=["competitor_monitoring", "violation_storage"],
+        requires_session=True,  # Requires AsyncSession injection
+    ),
+    # Evidence Collection Services (Story 6.8)
+    RegisteredService(
+        name="playwright_screenshot_service",
+        service_class=PlaywrightScreenshotService,
+        capabilities=["competitor_monitoring", "screenshot_capture"],
+        requires_session=False,  # Receives EvidenceCollectionConfig via injection
+    ),
+    RegisteredService(
+        name="evidence_storage_service",
+        service_class=EvidenceStorageService,
+        capabilities=["competitor_monitoring", "evidence_storage"],
+        requires_session=False,  # Receives EvidenceCollectionConfig via injection
+    ),
+    RegisteredService(
+        name="evidence_repository",
+        service_class=EvidenceRepository,
+        capabilities=["competitor_monitoring", "evidence_storage"],
+        requires_session=True,  # Requires AsyncSession injection
+    ),
+    # Evidence Download Service (Story 6.9)
+    RegisteredService(
+        name="evidence_download_service",
+        service_class=EvidenceDownloadService,
+        capabilities=["competitor_monitoring", "evidence_download"],
+        requires_session=False,  # Receives EvidenceStorageService via injection
+    ),
+    # Violation Report Generator (Story 6.10)
+    RegisteredService(
+        name="weasyprint_pdf_generator",
+        service_class=WeasyPrintPDFGenerator,
+        capabilities=["competitor_monitoring", "violation_reports"],
+        requires_session=True,  # Requires AsyncSession for audit logging
+    ),
+    RegisteredService(
+        name="report_storage_service",
+        service_class=ReportStorageService,
+        capabilities=["competitor_monitoring", "report_storage"],
+        requires_session=False,  # Receives ViolationReportConfig via injection
+    ),
+    # Instagram Analytics Services (Story 7.1)
+    RegisteredService(
+        name="instagram_metrics_repository",
+        service_class=InstagramMetricsRepository,
+        capabilities=["instagram_analytics", "metrics_storage"],
+        requires_session=True,  # Requires AsyncSession injection
+    ),
+    RegisteredService(
+        name="instagram_metrics_collector",
+        service_class=InstagramMetricsCollector,
+        capabilities=["instagram_analytics", "metrics_collection"],
+        requires_session=False,  # Receives client, repository, config via injection
+    ),
+    RegisteredService(
+        name="metrics_query_service",
+        service_class=MetricsQueryService,
+        capabilities=["instagram_analytics", "metrics_query", "performance_comparison"],
+        requires_session=False,  # Receives repository via injection
+    ),
+    # UTM Click-Through Tracking Services (Story 7.2)
+    RegisteredService(
+        name="utm_repository",
+        service_class=UTMRepository,
+        capabilities=["utm_tracking", "click_tracking", "link_management"],
+        requires_session=True,  # Requires AsyncSession injection
+    ),
+    RegisteredService(
+        name="short_link_service",
+        service_class=ShortLinkService,
+        capabilities=["utm_tracking", "link_generation", "click_tracking"],
+        requires_session=False,  # Receives UTMRepository and UTMConfig via injection
+    ),
+    RegisteredService(
+        name="click_analytics_service",
+        service_class=ClickAnalyticsService,
+        capabilities=["utm_tracking", "click_analytics", "performance_comparison"],
+        requires_session=False,  # Receives UTMRepository and MetricsQueryService via injection
+    ),
+    # Shopify Sales Attribution Services (Story 7.3)
+    RegisteredService(
+        name="attribution_repository",
+        service_class=AttributionRepository,
+        capabilities=["shopify_attribution", "revenue_data"],
+        requires_session=True,  # Requires AsyncSession injection
+    ),
+    RegisteredService(
+        name="attribution_service",
+        service_class=AttributionService,
+        capabilities=["shopify_attribution", "order_processing"],
+        requires_session=False,  # Receives AttributionRepository, UTMRepository, AttributionConfig via injection
+    ),
+    RegisteredService(
+        name="revenue_analytics_service",
+        service_class=RevenueAnalyticsService,
+        capabilities=["shopify_attribution", "revenue_analytics", "combined_analytics"],
+        requires_session=False,  # Receives AttributionRepository, ClickAnalyticsService, MetricsQueryService via injection
+    ),
+    # Post-Publish Quality Scoring Services (Story 7.4)
+    RegisteredService(
+        name="quality_scoring_repository",
+        service_class=QualityScoringRepository,
+        capabilities=["quality_scoring", "scoring_storage"],
+        requires_session=True,  # Requires AsyncSession injection
+    ),
+    RegisteredService(
+        name="comment_sentiment_scorer",
+        service_class=CommentSentimentScorer,
+        capabilities=["quality_scoring", "sentiment_analysis"],
+        requires_session=False,  # Pure Python keyword scoring, no external deps
+    ),
+    RegisteredService(
+        name="post_publish_scoring_service",
+        service_class=PostPublishScoringService,
+        capabilities=["quality_scoring", "post_scoring", "performance_analysis"],
+        requires_session=False,  # Receives all analytics services + repository via injection
+    ),
+    RegisteredService(
+        name="variance_analyzer",
+        service_class=VarianceAnalyzer,
+        capabilities=["quality_scoring", "variance_analysis", "correlation_analysis"],
+        requires_session=False,  # Receives QualityScoringRepository via injection
+    ),
+    # Performance Feedback Loop (Story 7.5)
+    RegisteredService(
+        name="feedback_loop_repository",
+        service_class=FeedbackLoopRepository,
+        capabilities=["analytics", "feedback_storage"],
+        requires_session=True,
+    ),
+    RegisteredService(
+        name="content_performance_analyzer",
+        service_class=ContentPerformanceAnalyzer,
+        capabilities=["analytics", "performance_analysis"],
+        requires_session=False,  # Receives repos via injection
+    ),
+    RegisteredService(
+        name="weight_adjuster",
+        service_class=WeightAdjuster,
+        capabilities=["analytics", "weight_management"],
+        requires_session=False,  # Receives analyzer + repo + config via injection
+    ),
+    RegisteredService(
+        name="feedback_loop_service",
+        service_class=FeedbackLoopService,
+        capabilities=["analytics", "feedback_loop"],
+        requires_session=False,  # Receives all deps via injection
+    ),
+    # Agent Schedule Configuration Services (Story 7.6)
+    RegisteredService(
+        name="agent_schedule_repository",
+        service_class=AgentScheduleRepository,
+        capabilities=["scheduling", "schedule_storage"],
+        requires_session=True,  # Requires AsyncSession injection
+    ),
+    RegisteredService(
+        name="agent_schedule_service",
+        service_class=AgentScheduleService,
+        capabilities=["scheduling", "schedule_management"],
+        requires_session=False,  # Receives repository and config via injection
+    ),
+    # Manual Trigger Service (Story 7.7)
+    RegisteredService(
+        name="manual_trigger_service",
+        service_class=ManualTriggerService,
+        capabilities=["scheduling", "manual_trigger", "team_trigger"],
+        requires_session=False,  # Receives repository and config via injection
+    ),
+    # Execution Dashboard Services (Story 7.8)
+    RegisteredService(
+        name="execution_log_repository",
+        service_class=ExecutionLogRepository,
+        capabilities=["scheduling", "execution_logs"],
+        requires_session=True,  # Requires AsyncSession injection
+    ),
+    RegisteredService(
+        name="execution_log_service",
+        service_class=ExecutionLogService,
+        capabilities=["scheduling", "execution_dashboard"],
+        requires_session=False,  # Receives repos via injection
+    ),
+    # Calendar Sync Service (Story 7.9)
+    RegisteredService(
+        name="calendar_sync_service",
+        service_class=CalendarSyncService,
+        capabilities=["calendar", "content_sync"],
+        requires_session=False,  # Receives CalendarClient, EventBuilder, CalendarConfig via injection
+    ),
+    # Graceful Degradation Services (Story 7.10)
+    RegisteredService(
+        name="service_health_registry",
+        service_class=ServiceHealthRegistry,
+        capabilities=["health_monitoring", "degradation"],
+        requires_session=False,  # Receives DegradationConfig + Redis via injection
+    ),
+    RegisteredService(
+        name="recovery_processor",
+        service_class=RecoveryProcessor,
+        capabilities=["recovery", "degradation"],
+        requires_session=False,  # Receives config, registry, queue, enqueuer via injection
+    ),
+    RegisteredService(
+        name="degradation_alert_service",
+        service_class=DegradationAlertService,
+        capabilities=["alerts", "degradation"],
+        requires_session=False,  # Receives config, registry, discord, redis via injection
     ),
 ]

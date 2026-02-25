@@ -14,7 +14,9 @@ from integrations.instagram.client import (
     InstagramPublishClientProtocol,
     PublishResult,
     ContainerStatus,
+    InstagramComment,
     InstagramPublishError,
+    MediaInsightsResult,
 )
 
 __all__ = [
@@ -22,5 +24,7 @@ __all__ = [
     "InstagramPublishClientProtocol",
     "PublishResult",
     "ContainerStatus",
+    "InstagramComment",
     "InstagramPublishError",
+    "MediaInsightsResult",
 ]
